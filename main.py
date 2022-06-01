@@ -44,7 +44,6 @@ class Elwood(commands.Bot):
     
     async def on_ready(self):
         print(f"[{await self.current_time()}] {self.user} has connected to Discord!")
-        print("IT WORKED!!!")
         
     async def on_message(self, message):
         # ------ Check that the message is not from the bot itself ------ 
