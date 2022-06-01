@@ -1,0 +1,4 @@
+git+https://github.com/Rapptz/discord.py
+git+https://github.com/Yepoleb/python-a2s
+git+https://github.com/theskumar/python-dotenv
+git+https://github.com/denvercoder1/table2ascii
