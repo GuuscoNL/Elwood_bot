@@ -12,7 +12,7 @@ class guus(commands.Cog):
    @app_commands.command(
          name = "guus",
          description = "Gives an explanation and a video on how to pronounce Guus correctly")
-      # "https://www.youtube.com/watch?v=JsUJV2zvQtY"
+   
    async def guus(self, interaction : discord.Interaction) -> None:
       explanation = "In Dutch, a G is pronounced quite like the German [ch], as in Bach. Or, while it doesn't exist in Standard English, you might also be familiar with this sound in Scottish words like “loch” and “ach.”"
       em = discord.Embed(title="How to pronounce Guus:", 
