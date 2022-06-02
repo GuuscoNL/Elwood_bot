@@ -51,7 +51,7 @@ class Elwood(commands.Bot):
             return
         
         # ------ Does the author have the ADMIN role? ------ 
-        if message.author.id == 397046303378505729:
+        if message.author.id == 397046303378505729: # If the author is me (GuuscoNL)
             is_admin = True
         else:
             is_admin = await self.check_permission(message.author.roles, ADMIN_ROLE_ID)
