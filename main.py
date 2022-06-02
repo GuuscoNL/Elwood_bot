@@ -17,7 +17,7 @@ ADMIN_ROLE_ID = 701895569060135005
 UPDATE_DELAY = 60 # seconds
 
 #TODO: Find a way to share variables between cogs file and this file (DOESN'T WORK FOR SOME DAMN REASON)
-#      temp solution is to use ! commands on_message() instead of / commands in cogs.
+#      temp solution is to use ! commands with on_message() instead of / commands in cogs.
 
 class Elwood(commands.Bot):
 
