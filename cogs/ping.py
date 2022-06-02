@@ -22,7 +22,7 @@ class ping(commands.Cog):
     @ping.error
     async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:
         if isinstance(error, app_commands.MissingAnyRole):
-            if interaction.user.id == 397046303378505729:
+            if interaction.user.id == 397046303378505729:# Check if the author is me (GuuscoNL)
                 await interaction.response.send_message(f"pong ({str(self.bot.latency*1000)[0:6]} ms)")
             else:
                 await interaction.response.send_message("You do not have the permission!", ephemeral=True)

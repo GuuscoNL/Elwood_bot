@@ -26,7 +26,7 @@ class help(commands.Cog):
    @help.error
    async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:  
       if isinstance(error, app_commands.MissingAnyRole):
-         if interaction.user.id == 397046303378505729:
+         if interaction.user.id == 397046303378505729: # Check if the author is me (GuuscoNL)
             em = discord.Embed(title="Elwood commands:")
             em = await self.help_admin(em)
             await interaction.response.send_message(embed= await self.help_public(em), ephemeral=True)
