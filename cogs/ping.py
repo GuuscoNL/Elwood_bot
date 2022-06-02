@@ -15,13 +15,13 @@ class ping(commands.Cog):
         name = "ping",
         description = "Pings the bot")
 
-    @app_commands.checks.has_any_role(ADMIN_ROLE_ID)
+    @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @ping.error
     async def ping(self, interaction : discord.Interaction) -> None:
         await interaction.response.send_message(f"pong ({str(self.bot.latency*1000)[0:6]} ms)")
         
     @ping.error
     async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:
-        if isinstance(error, app_commands.MissingAnyRole):
+        if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
             if interaction.user.id == 397046303378505729:# Check if the author is me (GuuscoNL)
                 await interaction.response.send_message(f"pong ({str(self.bot.latency*1000)[0:6]} ms)")
             else:

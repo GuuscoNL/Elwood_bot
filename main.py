@@ -54,7 +54,7 @@ class Elwood(commands.Bot):
         if message.author.id == 397046303378505729: # Check if the author is me (GuuscoNL)
             is_admin = True
         else:
-            is_admin = await self.check_permission(message.author.roles, ADMIN_ROLE_ID)
+            is_admin = await self.check_permission(message.author.roles, ADMIN_ROLE_ID) # Check if the author has the admin role
         
         if message.content.startswith("!send_server_info"):
             # ------ If admin do it, else say no perms ------

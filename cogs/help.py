@@ -2,7 +2,6 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-
 SERVER_ID = 543042771070484491
 ADMIN_ROLE_ID = 701895569060135005
 
@@ -15,7 +14,7 @@ class help(commands.Cog):
       name = "help",
       description = "Gives a list with all the commands are and what they do")
     
-   @app_commands.checks.has_any_role(ADMIN_ROLE_ID)
+   @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @help.error
    async def help(self, interaction : discord.Interaction) -> None:
 
       em = discord.Embed(title="Elwood commands:")
@@ -25,7 +24,7 @@ class help(commands.Cog):
       
    @help.error
    async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:  
-      if isinstance(error, app_commands.MissingAnyRole):
+      if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
          if interaction.user.id == 397046303378505729: # Check if the author is me (GuuscoNL)
             em = discord.Embed(title="Elwood commands:")
             em = await self.help_admin(em)
