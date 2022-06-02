@@ -19,6 +19,8 @@ class roll(commands.Cog):
          await interaction.response.send_message(f"You rolled a {roll}, have you thought of joining medical?")
       elif roll == 100:
          await interaction.response.send_message(f"You rolled a {roll}, wow...")
+      elif roll == 69:
+         await interaction.response.send_message(f"You rolled a {roll}, nice")
       else:
          await interaction.response.send_message(f"You rolled a {roll}")
 
