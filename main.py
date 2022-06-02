@@ -119,7 +119,10 @@ class Elwood(commands.Bot):
             players = []
             for i in range(len(players_server)):
                 time_played = str(datetime.timedelta(seconds=int(players_server[0+i].duration))) # Convert seconds to h:m:s
-                temp = [players_server[0+i].name, time_played]
+                player_name = players_server[0+i].name
+                if player_name == "": # If player_name == "" than they are still connecting
+                    player_name = "Connecting..."
+                temp = [player_name, time_played]
                 players.append(temp)
 
             #  ------ Make the table ------ 
