@@ -4,6 +4,7 @@ import datetime
 import os
 import aiohttp
 import time
+import json
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from table2ascii import table2ascii
@@ -12,10 +13,19 @@ load_dotenv() # load all the variables from the env file
 
 # ------ Constants that must be changed for every server the bot is in ------ 
 TOKEN =os.getenv('TOKEN')
-SERVER_ID = os.getenv('SERVER_ID')
-CHANNEL_ID_SERVER_INFO = os.getenv('CHANNEL_ID_SERVER_INFO')
-ADMIN_ROLE_ID = os.getenv('ADMIN_ROLE_ID')
+SERVER_ID = int(os.getenv('SERVER_ID'))
+CHANNEL_ID_SERVER_INFO = int(os.getenv('CHANNEL_ID_SERVER_INFO'))
+ADMIN_ROLE_ID = int(os.getenv('ADMIN_ROLE_ID'))
 UPDATE_DELAY = 60 # seconds
+
+from pathlib import Path
+path_dir = Path(__file__).parent.resolve()
+path_json = path_dir / "data.JSON"
+print(path_json)
+with path_json.open() as file:
+    json_data = json.loads(file.read())
+    print(json_data)
+
 
 #TODO: Find a way to share variables between cogs file and this file (DOESN'T WORK FOR SOME DAMN REASON)
 #      temp solution is to use ! commands with on_message() instead of / commands in cogs.
@@ -27,7 +37,7 @@ class Elwood(commands.Bot):
             command_prefix="!",
             intents = discord.Intents.all(),
             application_id = 979113489387884554)
-        self.send_server_info = False
+        self.send_server_info = True
         self.msg = None
 
 
@@ -83,12 +93,22 @@ class Elwood(commands.Bot):
 
     @tasks.loop(seconds=UPDATE_DELAY)
     async def background(self):
+        channel = self.get_channel(CHANNEL_ID_SERVER_INFO) # Get the channel where the server info will be posted
+        with path_json.open() as file:
+            json_data = json.loads(file.read())
+            msg_ID = json_data["message_ID"]
+            try:
+                self.msg = await channel.fetch_message(msg_ID)
+            except discord.NotFound:
+                self.msg = None
+        print("STart IF")
         if self.send_server_info == True:
-            channel = self.get_channel(CHANNEL_ID_SERVER_INFO) # Get the channel where the server info will be posted
             em = await self.TBN() # Get the embed with the server info
             if self.msg == None: # if message doesn't exist create a new one
                 print(f"[{await self.current_time()}] Starting server info")
                 self.msg = await channel.send(embed=em, content="Connect to server: steam://connect/46.4.12.78:27015")
+                await self.update_json()
+                    
             else:
                 print(f"[{await self.current_time()}] Updated server information")
                 await self.msg.edit(embed=em, content="Connect to server: steam://connect/46.4.12.78:27015")
@@ -108,7 +128,16 @@ class Elwood(commands.Bot):
     async def current_time(self): # Get current time
         now = datetime.datetime.utcnow()
         return now.strftime("%d/%m/%Y %H:%M:%S UTC")
-
+    
+    async def update_json(self):
+        with path_json.open(mode="r+") as file:
+            json_data = json.loads(file.read())
+            json_data["message_ID"] = self.msg.id
+            print(json_data)
+            file.seek(0)
+            temp = json.dumps(json_data, indent=4)
+            file.write(temp)
+            
     async def TBN(self): # Put server info in embed
         try:
             # ------ Connect to the server and get info ------ 
@@ -144,7 +173,6 @@ class Elwood(commands.Bot):
             return em
 
 bot = Elwood()
-
 bot.run(TOKEN) # run the bot with the token
 
     
