@@ -2,8 +2,11 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import random as rnd
+from dotenv import load_dotenv
+import os
 
-SERVER_ID = 543042771070484491
+load_dotenv() # load all the variables from the env file
+SERVER_ID =os.getenv('SERVER_ID')
 
 class roll(commands.Cog):
 

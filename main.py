@@ -11,9 +11,10 @@ from table2ascii import table2ascii
 load_dotenv() # load all the variables from the env file
 
 # ------ Constants that must be changed for every server the bot is in ------ 
-SERVER_ID = 543042771070484491
-CHANNEL_ID_SERVER_INFO = 980213685198946324
-ADMIN_ROLE_ID = 701895569060135005
+TOKEN =os.getenv('TOKEN')
+SERVER_ID = os.getenv('SERVER_ID')
+CHANNEL_ID_SERVER_INFO = os.getenv('CHANNEL_ID_SERVER_INFO')
+ADMIN_ROLE_ID = os.getenv('ADMIN_ROLE_ID')
 UPDATE_DELAY = 60 # seconds
 
 #TODO: Find a way to share variables between cogs file and this file (DOESN'T WORK FOR SOME DAMN REASON)
@@ -143,7 +144,7 @@ class Elwood(commands.Bot):
             return em
 
 bot = Elwood()
-TOKEN =os.getenv('TOKEN')
+
 bot.run(TOKEN) # run the bot with the token
 
     
