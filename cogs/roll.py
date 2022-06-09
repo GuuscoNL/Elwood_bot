@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv() # load all the variables from the env file
-SERVER_ID =os.getenv('SERVER_ID')
+SERVER_ID = os.getenv('SERVER_ID')
 
 class roll(commands.Cog):
 

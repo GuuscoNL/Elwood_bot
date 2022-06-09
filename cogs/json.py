@@ -6,8 +6,8 @@ import os
 import json
 
 load_dotenv() # load the variables needed from the .env file
-SERVER_ID =os.getenv('SERVER_ID')
-ADMIN_ROLE_ID =os.getenv('ADMIN_ROLE_ID')
+SERVER_ID = os.getenv('SERVER_ID')
+ADMIN_ROLE_ID = int(os.getenv('ADMIN_ROLE_ID'))
 
 from pathlib import Path
 path_dir = Path(__file__).parent.parent.resolve()

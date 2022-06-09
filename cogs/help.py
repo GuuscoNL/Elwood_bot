@@ -6,7 +6,7 @@ import os
 
 load_dotenv() # load all the variables from the env file
 SERVER_ID =os.getenv('SERVER_ID')
-ADMIN_ROLE_ID = os.getenv('ADMIN_ROLE_ID')
+ADMIN_ROLE_ID = int(os.getenv('ADMIN_ROLE_ID'))
 
 class help(commands.Cog):
 
