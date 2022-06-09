@@ -11,7 +11,7 @@ from table2ascii import table2ascii
 
 load_dotenv() # load all the variables from the env file
 
-# ------ Constants that must be changed for every server the bot is in ------ 
+# ------ Constants that must be changed in .env for every server the bot is in ------ 
 TOKEN =os.getenv('TOKEN')
 SERVER_ID = int(os.getenv('SERVER_ID'))
 CHANNEL_ID_SERVER_INFO = int(os.getenv('CHANNEL_ID_SERVER_INFO'))
@@ -40,7 +40,6 @@ class Elwood(commands.Bot):
             application_id = 979113489387884554)
         self.send_server_info = False
         self.msg = None
-
 
     async def setup_hook(self): 
         self.session = aiohttp.ClientSession()
@@ -91,7 +90,6 @@ class Elwood(commands.Bot):
             else:
                 print(f"[{await self.current_time()}] Updated server information")
                 await self.msg.edit(embed=em, content="Connect to server: steam://connect/46.4.12.78:27015")
-        
     
     @background.before_loop
     async def before_background(self):
