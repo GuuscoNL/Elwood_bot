@@ -23,11 +23,12 @@ path_dir = Path(__file__).parent.resolve()
 path_json = path_dir / "data.JSON"
 print(path_json)
 with path_json.open(mode="r+") as file:
-    json_data = json.loads(file.read())
+    json_data = {}
     json_data["message_ID"] = 0
     json_data["send_server_info"] = False
     file.seek(0)
-    temp = json.dumps(json_data, indent=4)
+    temp = json.dumps(json_data, indent=3)
+    file.truncate(0)
     file.write(temp)
 
 
@@ -52,6 +53,7 @@ class Elwood(commands.Bot):
         await self.load_extension("cogs.content")
         await self.load_extension("cogs.help")
         await self.load_extension("cogs.roll")
+        await self.load_extension("cogs.toggle_server")
         await self.load_extension("cogs.guus")
         await self.load_extension("cogs.invite")
         await self.load_extension("cogs.json")
@@ -139,7 +141,8 @@ class Elwood(commands.Bot):
             json_data["message_ID"] = self.msg.id
             print(json_data)
             file.seek(0)
-            temp = json.dumps(json_data, indent=4)
+            temp = json.dumps(json_data, indent=3)
+            file.truncate(0)
             file.write(temp)
             
     async def TBN(self): # Put server info in embed
