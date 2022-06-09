@@ -22,9 +22,13 @@ from pathlib import Path
 path_dir = Path(__file__).parent.resolve()
 path_json = path_dir / "data.JSON"
 print(path_json)
-with path_json.open() as file:
+with path_json.open(mode="r+") as file:
     json_data = json.loads(file.read())
-    print(json_data)
+    json_data["message_ID"] = 0
+    json_data["send_server_info"] = False
+    file.seek(0)
+    temp = json.dumps(json_data, indent=4)
+    file.write(temp)
 
 
 #TODO: Find a way to share variables between cogs file and this file (DOESN'T WORK FOR SOME DAMN REASON)
@@ -37,7 +41,7 @@ class Elwood(commands.Bot):
             command_prefix="!",
             intents = discord.Intents.all(),
             application_id = 979113489387884554)
-        self.send_server_info = True
+        self.send_server_info = False
         self.msg = None
 
 
@@ -50,6 +54,7 @@ class Elwood(commands.Bot):
         await self.load_extension("cogs.roll")
         await self.load_extension("cogs.guus")
         await self.load_extension("cogs.invite")
+        await self.load_extension("cogs.json")
         await bot.tree.sync(guild = discord.Object(id = SERVER_ID))
         self.background.start()
     
@@ -101,7 +106,6 @@ class Elwood(commands.Bot):
                 self.msg = await channel.fetch_message(msg_ID)
             except discord.NotFound:
                 self.msg = None
-        print("STart IF")
         if self.send_server_info == True:
             em = await self.TBN() # Get the embed with the server info
             if self.msg == None: # if message doesn't exist create a new one
