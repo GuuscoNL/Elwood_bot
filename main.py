@@ -31,10 +31,6 @@ with path_json.open(mode="r+") as file:
     file.truncate(0)
     file.write(temp)
 
-
-#TODO: Find a way to share variables between cogs file and this file (DOESN'T WORK FOR SOME DAMN REASON)
-#      temp solution is to use ! commands with on_message() instead of / commands in cogs.
-
 class Elwood(commands.Bot):
 
     def __init__(self):
@@ -63,40 +59,16 @@ class Elwood(commands.Bot):
     async def on_ready(self):
         print(f"[{await self.current_time()}] {self.user} has connected to Discord!")
         
-    async def on_message(self, message):
-        # ------ Check that the message is not from the bot itself ------ 
-        if message.author.id == self.user.id:
-            return
+    # async def on_message(self, message):
+    #     # ------ Check that the message is not from the bot itself ------ 
+    #     if message.author.id == self.user.id:
+    #         return
         
-        # ------ Does the author have the ADMIN role? ------ 
-        if message.author.id == 397046303378505729: # Check if the author is me (GuuscoNL)
-            is_admin = True
-        else:
-            is_admin = await self.check_permission(message.author.roles, ADMIN_ROLE_ID) # Check if the author has the admin role
-        
-        if message.content.startswith("!send_server_info"):
-            # ------ If admin do it, else say no perms ------
-            if is_admin:
-                await message.reply(f"send_server_info = {self.send_server_info}")
-            else:
-                await message.reply(f"You do not have permission") # Tell the author that they do not have permission
-                print(f"[{await self.current_time()}] {message.author.name} tried to use the `!send_server_info` command") # Log it
-            
-        if message.content.startswith("!toggle_server"):
-            # ------ If admin do it, else say no perms ------ 
-            if is_admin:
-                self.send_server_info = not self.send_server_info # toggle send_server_info
-                print(f"[{await self.current_time()}] {message.author.name} changed send_server_info to {self.send_server_info}") # log it
-                if self.send_server_info == False and self.msg != None:
-                    em = await self.TBN()
-                    em.set_footer(text="Not updating")
-                    await self.msg.edit(embed=em, content="Connect to server: steam://connect/46.4.12.78:27015") # If False say 'not updating' in server info message
-                    await message.reply(f"The send_server_info variable is set to {self.send_server_info}")
-                else: 
-                    await message.reply(f"The send_server_info variable is set to {self.send_server_info} (Will update within {UPDATE_DELAY} seconds)")
-            else:
-                await message.reply(f"You do not have permission") # Tell the author that they do not have permission
-                print(f"[{await self.current_time()}] {message.author.name} tried to use the `!toggle_server` command") # Log it
+    #     # ------ Does the author have the ADMIN role? ------ 
+    #     if message.author.id == 397046303378505729: # Check if the author is me (GuuscoNL)
+    #         is_admin = True
+    #     else:
+    #         is_admin = await self.check_permission(message.author.roles, ADMIN_ROLE_ID) # Check if the author has the admin role
 
     @tasks.loop(seconds=UPDATE_DELAY)
     async def background(self):
@@ -104,6 +76,7 @@ class Elwood(commands.Bot):
         with path_json.open() as file:
             json_data = json.loads(file.read())
             msg_ID = json_data["message_ID"]
+            self.send_server_info = json_data["send_server_info"]
             try:
                 self.msg = await channel.fetch_message(msg_ID)
             except discord.NotFound:

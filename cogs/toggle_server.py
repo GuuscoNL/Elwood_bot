@@ -27,7 +27,10 @@ class toggle_server(commands.Cog):
    @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @toggle_server.error
    async def toggle_server(self, interaction : discord.Interaction) -> None:
       await self.update_json()
-      await interaction.response.send_message(f"The send_server_info variable is set to {self.last_toggle}", ephemeral=True)
+      msg = f"The send_server_info variable is set to {self.last_toggle}"
+      if self.last_toggle == True:
+         msg = msg + " (Will update within 60 seconds)"
+      await interaction.response.send_message(msg, ephemeral=True)
       print(f"[{await self.current_time()}] {interaction.user.name} changed send_server_info to {self.last_toggle}")
       
    @toggle_server.error
@@ -35,7 +38,10 @@ class toggle_server(commands.Cog):
       if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
          if interaction.user.id == 397046303378505729:# Check if the author is me (GuuscoNL)
             await self.update_json()
-            await interaction.response.send_message(f"The send_server_info variable is set to {self.last_toggle}", ephemeral=True)
+            msg = f"The send_server_info variable is set to {self.last_toggle}"
+            if self.last_toggle == True:
+               msg = msg + " (Will update within 60 seconds)"
+            await interaction.response.send_message(msg, ephemeral=True)
             print(f"[{await self.current_time()}] {interaction.user.name} changed send_server_info to {self.last_toggle}")
          else:
             await interaction.response.send_message("You do not have the permission!", ephemeral=True)
