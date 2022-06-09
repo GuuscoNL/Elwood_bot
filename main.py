@@ -87,7 +87,7 @@ class Elwood(commands.Bot):
             if self.msg == None: # if message doesn't exist create a new one
                 print(f"[{await self.current_time()}] Starting server info")
                 self.msg = await channel.send(embed=em, content="Connect to server: steam://connect/46.4.12.78:27015")
-                await self.update_json()
+                await self.update_json_message_ID()
                     
             else:
                 print(f"[{await self.current_time()}] Updated server information")
@@ -108,11 +108,10 @@ class Elwood(commands.Bot):
         now = datetime.datetime.utcnow()
         return now.strftime("%d/%m/%Y %H:%M:%S UTC")
     
-    async def update_json(self):
+    async def update_json_message_ID(self):
         with path_json.open(mode="r+") as file:
             json_data = json.loads(file.read())
             json_data["message_ID"] = self.msg.id
-            print(json_data)
             file.seek(0)
             temp = json.dumps(json_data, indent=3)
             file.truncate(0)
