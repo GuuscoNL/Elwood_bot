@@ -9,9 +9,11 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from table2ascii import table2ascii
 
-load_dotenv() # load all the variables from the env file
+#TODO: Find a way to store message ID after restart. using a JSON file only works 
+# locally, because heroku does not save the JSON file between restarts.
 
 # ------ Constants that must be changed in .env for every server the bot is in ------ 
+load_dotenv() # load all the variables from the env file
 TOKEN =os.getenv('TOKEN')
 SERVER_ID = int(os.getenv('SERVER_ID'))
 CHANNEL_ID_SERVER_INFO = int(os.getenv('CHANNEL_ID_SERVER_INFO'))
