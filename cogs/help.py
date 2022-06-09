@@ -65,10 +65,10 @@ class help(commands.Cog):
       `/restart`
       Restarts the bot
       
-     `!send_server_info`
-      Shows what the variable send_server_info is set to (if True the bot will update the message)
+     `/json`
+      Shows what is in the data.JSON file
       
-      `!toggle_server`
+      `/toggle_server`
       Toggles the send_server_info variable
       '''
       em.add_field(name="Admin commands:", value=admin_help)
