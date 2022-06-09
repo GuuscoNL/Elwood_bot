@@ -2,12 +2,13 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
+import datetime
 import os
 import json
 
 load_dotenv() # load the variables needed from the .env file
 SERVER_ID =os.getenv('SERVER_ID')
-ADMIN_ROLE_ID =os.getenv('ADMIN_ROLE_ID')
+ADMIN_ROLE_ID = int(os.getenv('ADMIN_ROLE_ID'))
 
 from pathlib import Path
 path_dir = Path(__file__).parent.parent.resolve()
@@ -23,19 +24,22 @@ class toggle_server(commands.Cog):
       name = "toggle_server",
       description = "toggles the send_server_info variable")
 
-   @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @json.error
+   @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @toggle_server.error
    async def toggle_server(self, interaction : discord.Interaction) -> None:
       await self.update_json()
       await interaction.response.send_message(f"The send_server_info variable is set to {self.last_toggle}", ephemeral=True)
+      print(f"[{await self.current_time()}] {interaction.user.name} changed send_server_info to {self.last_toggle}")
       
    @toggle_server.error
    async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:
       if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
          if interaction.user.id == 397046303378505729:# Check if the author is me (GuuscoNL)
-               await self.update_json()
-               await interaction.response.send_message(f"The send_server_info variable is set to {self.last_toggle}", ephemeral=True)
+            await self.update_json()
+            await interaction.response.send_message(f"The send_server_info variable is set to {self.last_toggle}", ephemeral=True)
+            print(f"[{await self.current_time()}] {interaction.user.name} changed send_server_info to {self.last_toggle}")
          else:
-               await interaction.response.send_message("You do not have the permission!", ephemeral=True)
+            await interaction.response.send_message("You do not have the permission!", ephemeral=True)
+            print(f"[{await self.current_time()}] {interaction.user.name} tried to use the `/toggle_server` command") # Log it
    
    async def update_json(self):
       with path_json.open(mode="r+") as file:
@@ -46,6 +50,10 @@ class toggle_server(commands.Cog):
          temp = json.dumps(json_data, indent=3)
          file.truncate(0)
          file.write(temp)
+   
+   async def current_time(self): # Get current time
+      now = datetime.datetime.utcnow()
+      return now.strftime("%d/%m/%Y %H:%M:%S UTC")
 
 async def setup(bot : commands.Bot) -> None:
    await bot.add_cog(
