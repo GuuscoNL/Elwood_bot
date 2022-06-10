@@ -23,7 +23,7 @@ UPDATE_DELAY = 60 # seconds
 from pathlib import Path
 path_dir = Path(__file__).parent.resolve()
 path_json = path_dir / "data.JSON"
-print(path_json)
+
 with path_json.open(mode="r+") as file:
     json_data = {}
     json_data["message_ID"] = 0
