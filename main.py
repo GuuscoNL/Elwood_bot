@@ -147,8 +147,11 @@ class Elwood(commands.Bot):
                             )
             return em
         except Exception as e: # An error has occurred. Print it and put it in the embed
-            print(f"--------------------------\n[{await self.current_time()}]\nERROR:\n{e}\n--------------------------\n")
-            em = discord.Embed(title="An error occurred",description=e)
+            if str(e) == "timed out":
+                em = discord.Embed(title="Timed out",description=f"Probably a map restart")
+            else:
+                print(f"--------------------------\n[{await self.current_time()}]\nERROR:\n{e}\n--------------------------\n")
+                em = discord.Embed(title="An error occurred",description=e)
             return em
 
 bot = Elwood()
