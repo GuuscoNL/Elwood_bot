@@ -17,7 +17,11 @@ class content(commands.Cog):
         description = "Gives a link to Steam Workshop collection with all the content packs you need for the TBN server")
 
     async def content(self, interaction : discord.Interaction) -> None:
-        await interaction.response.send_message(f"https://steamcommunity.com/workshop/filedetails/?id=2566173658", ephemeral=True)
+        mesg = """The Content for the server is NOT REQUIRED.
+It is FASTER, to join the server without it.
+Only Subscribe to the server if your problems persist after a restart of the game and joining the server again.
+\n||https://steamcommunity.com/workshop/filedetails/?id=2566173658||"""
+        await interaction.response.send_message(mesg, ephemeral=True)
 
 async def setup(bot : commands.Bot) -> None:
     await bot.add_cog(
