@@ -28,6 +28,7 @@ with path_json.open(mode="r+") as file:
     json_data = {}
     json_data["message_ID"] = 0
     json_data["send_server_info"] = False
+    json_data["debug"] = False
     file.seek(0)
     temp = json.dumps(json_data, indent=3)
     file.truncate(0)
@@ -54,6 +55,7 @@ class Elwood(commands.Bot):
         await self.load_extension("cogs.guus")
         await self.load_extension("cogs.invite")
         await self.load_extension("cogs.json")
+        await self.load_extension("cogs.debug")
         await bot.tree.sync(guild = discord.Object(id = SERVER_ID))
         self.background.start()
     
@@ -77,6 +79,7 @@ class Elwood(commands.Bot):
         with path_json.open() as file:
             json_data = json.loads(file.read())
             msg_ID = json_data["message_ID"]
+            debug = json_data["debug"]
             self.send_server_info = json_data["send_server_info"]
             try:
                 self.msg = await channel.fetch_message(msg_ID)
@@ -90,7 +93,7 @@ class Elwood(commands.Bot):
                 await self.update_json_message_ID()
                     
             else:
-                print(f"[{await self.current_time()}] Updated server information")
+                if debug: print(f"[{await self.current_time()}] Updated server information")
                 await self.msg.edit(embed=em, content="Connect to server: steam://connect/46.4.12.78:27015")
     
     @background.before_loop
