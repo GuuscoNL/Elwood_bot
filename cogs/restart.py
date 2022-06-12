@@ -21,6 +21,7 @@ class restart(commands.Cog):
     async def restart(self, interaction : discord.Interaction) -> None:
         # Only restarts if in cloud, otherwise it just quits
         await interaction.response.send_message("Restarting...")
+        print(f"[{await self.current_time()}] {interaction.user.name} restarted the bot")
         quit(0)
     
     @restart.error
@@ -29,9 +30,11 @@ class restart(commands.Cog):
         if isinstance(error, app_commands.MissingAnyRole):
             if interaction.user.id == 397046303378505729:
                 await interaction.response.send_message("Restarting...")
+                print(f"[{await self.current_time()}] {interaction.user.name} restarted the bot")
                 quit(0)
             else:
                 await interaction.response.send_message("You do not have the permission!", ephemeral=True)
+                print(f"[{await self.current_time()}] {interaction.user.name} tried to use the `/restart` command")
 
 async def setup(bot : commands.Bot) -> None:
     await bot.add_cog(
