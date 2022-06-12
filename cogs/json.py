@@ -1,4 +1,5 @@
 import discord
+import datetime
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -40,6 +41,10 @@ class command_json(commands.Cog):
          else:
                await interaction.response.send_message("You do not have the permission!", ephemeral=True)
                print(f"[{await self.current_time()}] {interaction.user.name} tried to use the `/json` command")
+
+   async def current_time(self): # Get current time
+      now = datetime.datetime.utcnow()
+      return now.strftime("%d/%m/%Y %H:%M:%S UTC")
 
 async def setup(bot : commands.Bot) -> None:
    await bot.add_cog(
