@@ -141,10 +141,11 @@ class Elwood(commands.Bot):
             return em
         except Exception as e: # An error has occurred. Print it and put it in the embed
             if str(e) == "timed out":
-                em = discord.Embed(title="Timed out",description=f"Probably a map restart")
+                em = discord.Embed(title="Timed out",description=f"Probably a map restart or server is offline")
+                em.set_footer(text="Ping Guus if this is still happening after 5 mins")
             else:
                 print(f"--------------------------\n[{await self.current_time()}]\nERROR:\n{e}\n--------------------------\n")
-                em = discord.Embed(title="An error occurred",description=e)
+                em = discord.Embed(title="An error occurred",description=e+"\nFIX THIS <@397046303378505729>",)
             return em
     async def Get_table(self, address):
         # ------ Get players online from server ------ 
