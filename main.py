@@ -135,8 +135,8 @@ class Elwood(commands.Bot):
                             description="", #f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n```{main_table}```Last update <t:{int(time.time())}:R>", 
                             url="https://www.gametracker.com/server_info/46.4.12.78:27015/"
                             )
-            em.add_field(name="Main server:", value=f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n```{main_table}```")
-            em.add_field(name="Event server:", value=f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n```{event_table}```")
+            em.add_field(name="Main server:", value=f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n```{main_table}```", inline=False)
+            em.add_field(name="Event server:", value=f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n```{event_table}```", inline=False)
             em.add_field(name="Last update:", value=f"<t:{int(time.time())}:R>", inline=False)
             return em
         except Exception as e: # An error has occurred. Print it and put it in the embed
