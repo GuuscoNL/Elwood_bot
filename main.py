@@ -27,7 +27,7 @@ path_json = path_dir / "data.JSON"
 with path_json.open(mode="r+") as file:
     json_data = {}
     json_data["message_ID"] = 0
-    json_data["send_server_info"] = False
+    json_data["send_server_info"] = True
     json_data["debug"] = False
     file.seek(0)
     temp = json.dumps(json_data, indent=3)
@@ -122,32 +122,22 @@ class Elwood(commands.Bot):
             
     async def TBN(self): # Put server info in embed
         try:
-            # ------ Connect to the server and get info ------ 
-            address = ("46.4.12.78", 27015)
-            players_server = a2s.players(address)
-            info_server = a2s.info(address)
-
-            # ------ Make a list so that table2ascii can read it ------ 
-            players = []
-            for i in range(len(players_server)):
-                time_played = str(datetime.timedelta(seconds=int(players_server[0+i].duration))) # Convert seconds to h:m:s
-                player_name = players_server[0+i].name
-                if player_name == "": # If player_name == "" than they are still connecting
-                    player_name = "Connecting..."
-                temp = [player_name, time_played]
-                players.append(temp)
-
-            #  ------ Make the table ------ 
-            output = table2ascii(
-                                header=["Player", "Time Played"],
-                                body=players
-                                )
+            # ------ Get tables and get server infos ------ 
+            main_address = ("46.4.12.78", 27015)
+            event_address = ("46.4.12.78", 27016) 
+            main_table = await self.Get_table(main_address)
+            event_table = await self.Get_table(event_address)
+            info_server_main = a2s.info(main_address)
+            info_server_event = a2s.info(event_address)
             
             #  ------ Make the embed ------ 
             em = discord.Embed(title="Server information", 
-                            description=f"Players online: {info_server.player_count}/{info_server.max_players}\n```{output}```Last update <t:{int(time.time())}:R>", 
+                            description="", #f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n```{main_table}```Last update <t:{int(time.time())}:R>", 
                             url="https://www.gametracker.com/server_info/46.4.12.78:27015/"
                             )
+            em.add_field(name="Main server:", value=f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n```{main_table}```")
+            em.add_field(name="Event server:", value=f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n```{event_table}```")
+            em.add_field(name="Last update:", value=f"<t:{int(time.time())}:R>", inline=False)
             return em
         except Exception as e: # An error has occurred. Print it and put it in the embed
             if str(e) == "timed out":
@@ -156,6 +146,25 @@ class Elwood(commands.Bot):
                 print(f"--------------------------\n[{await self.current_time()}]\nERROR:\n{e}\n--------------------------\n")
                 em = discord.Embed(title="An error occurred",description=e)
             return em
+    async def Get_table(self, address):
+        # ------ Get players online from server ------ 
+        players_server = a2s.players(address)
+        # ------ Make a list so that table2ascii can read it ------ 
+        players = []
+        for i in range(len(players_server)):
+            time_played = str(datetime.timedelta(seconds=int(players_server[0+i].duration))) # Convert seconds to h:m:s
+            player_name = players_server[0+i].name
+            if player_name == "": # If player_name == "" than they are still connecting
+                player_name = "Connecting..."
+            temp = [player_name, time_played]
+            players.append(temp)
+
+        #  ------ Make the table ------ 
+        output = table2ascii(
+                            header=["Player", "Time Played"],
+                            body=players
+                                )
+        return output
 
 bot = Elwood()
 bot.run(TOKEN) # run the bot with the token
