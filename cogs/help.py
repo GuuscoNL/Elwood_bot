@@ -15,7 +15,7 @@ class help(commands.Cog):
    
    @app_commands.command(
       name = "help",
-      description = "Gives a list with all the commands are and what they do")
+      description = "Gives a list of all available commands")
     
    @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @help.error
    async def help(self, interaction : discord.Interaction) -> None:

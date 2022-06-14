@@ -22,7 +22,7 @@ class debug(commands.Cog):
    
    @app_commands.command(
       name = "debug",
-      description = "toggles the debug variable")
+      description = "Toggles the debug variable")
 
    @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @toggle_server.error
    async def debug(self, interaction : discord.Interaction) -> None:

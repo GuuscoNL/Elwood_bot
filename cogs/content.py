@@ -14,7 +14,7 @@ class content(commands.Cog):
     
     @app_commands.command(
         name = "content",
-        description = "Gives a link to Steam Workshop collection with all the content packs you need for the TBN server")
+        description = "Gives a link to the Steam Workshop collection that the TBN server uses")
 
     async def content(self, interaction : discord.Interaction) -> None:
         mesg = """The Content for the server is NOT REQUIRED.
