@@ -89,12 +89,22 @@ class Elwood(commands.Bot):
             em = await self.TBN() # Get the embed with the server info
             if self.msg == None: # if message doesn't exist create a new one
                 print(f"[{await self.current_time()}] Starting server info")
-                self.msg = await channel.send(embed=em, content="Connect to server: steam://connect/46.4.12.78:27015")
+                try:
+                    self.msg = await channel.send(embed=em, content="Connect to server: steam://connect/46.4.12.78:27015")
+                except discord.errors.HTTPException:
+                    self.msg = await channel.send(content="ERROR too many players online, discord can't handle it (Must be 1024 or fewer in length.) \nWill be fixed in the future, I hope\n<@397046303378505729>")
+                except Exception as e:
+                    self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
                 await self.update_json_message_ID()
                     
             else:
                 if debug: print(f"[{await self.current_time()}] Updated server information")
-                await self.msg.edit(embed=em, content="Connect to server: steam://connect/46.4.12.78:27015")
+                try:
+                    await self.msg.edit(embed=em, content="Connect to server: steam://connect/46.4.12.78:27015")
+                except discord.errors.HTTPException:
+                    self.msg = await channel.send(content="ERROR too many players online, discord can't handle it (Must be 1024 or fewer in length.) \nWill be fixed in the future, I hope\n<@397046303378505729>")
+                except Exception as e:
+                    self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
     
     @background.before_loop
     async def before_background(self):
@@ -147,6 +157,7 @@ class Elwood(commands.Bot):
                 print(f"--------------------------\n[{await self.current_time()}]\nERROR:\n{e}\n--------------------------\n")
                 em = discord.Embed(title="An error occurred",description=e+"\nFIX THIS <@397046303378505729>",)
             return em
+        
     async def Get_table(self, address):
         # ------ Get players online from server ------ 
         players_server = a2s.players(address)
