@@ -28,7 +28,7 @@ class command_json(commands.Cog):
       with path_json.open(mode="r") as file:
          json_data = json.loads(file.read())   
       await interaction.response.send_message(f"```{json_data}```", ephemeral=True)
-      print(f"[{await self.current_time()}] {interaction.user.name} Looked at the JSON file")
+      print(f"[{await self.current_time()}] {interaction.user.name} looked at the JSON file")
       
    @command_json.error
    async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:
@@ -37,7 +37,7 @@ class command_json(commands.Cog):
                with path_json.open(mode="r") as file:
                   json_data = json.loads(file.read())
                await interaction.response.send_message(f"```{json_data}```", ephemeral=True)
-               print(f"[{await self.current_time()}] {interaction.user.name} Looked at the JSON file")
+               print(f"[{await self.current_time()}] {interaction.user.name} looked at the JSON file")
          else:
                await interaction.response.send_message("You do not have the permission!", ephemeral=True)
                print(f"[{await self.current_time()}] {interaction.user.name} tried to use the `/json` command")
