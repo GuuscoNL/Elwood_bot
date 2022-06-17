@@ -26,7 +26,7 @@ path_json = path_dir / "data.JSON"
 
 with path_json.open(mode="r+") as file:
     json_data = {}
-    json_data["message_ID"] = 987127924153008178
+    json_data["message_ID"] = 987496250091913236
     json_data["send_server_info"] = True
     json_data["debug"] = False
     file.seek(0)
