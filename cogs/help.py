@@ -69,7 +69,10 @@ class help(commands.Cog):
       Shows what is in the data.JSON file
       
       `/toggle_server`
-      Toggles the send_server_info variable
+      Toggles send_server_info variable
+      
+      `/debug`
+      Toggles debug variable
       '''
       em.add_field(name="Admin commands:", value=admin_help)
       return em
