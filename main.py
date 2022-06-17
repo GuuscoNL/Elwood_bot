@@ -86,7 +86,7 @@ class Elwood(commands.Bot):
             except discord.NotFound:
                 self.msg = None
         if self.send_server_info == True:
-            message = await self.TBN() # Get the embed with the server info
+            message = await self.TBN() # Get the message with the server info
             if self.msg == None: # if message doesn't exist create a new one
                 print(f"[{await self.current_time()}] Starting server info")
                 try:
@@ -134,7 +134,7 @@ class Elwood(commands.Bot):
             file.truncate(0)
             file.write(temp)
             
-    async def TBN(self): # Put server info in embed
+    async def TBN(self): # Get server info
         try:
             # ------ Get tables and get server infos ------ 
             main_address = ("46.4.12.78", 27015)
@@ -143,16 +143,7 @@ class Elwood(commands.Bot):
             event_table = await self.Get_table(event_address)
             info_server_main = a2s.info(main_address)
             info_server_event = a2s.info(event_address)
-            """
-            #  ------ Make the embed ------ 
-            em = discord.Embed(title="Server information", 
-                            description="", #f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n```{main_table}```Last update <t:{int(time.time())}:R>", 
-                            url="https://www.gametracker.com/server_info/46.4.12.78:27015/"
-                            )
-            em.add_field(name="Main server:", value=f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n```{main_table}```", inline=False)
-            em.add_field(name="Event server:", value=f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n```{event_table}```", inline=False)
-            em.add_field(name="Last update:", value=f"<t:{int(time.time())}:R>", inline=False)
-            """
+
             message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
             message += "**Main server:**\n"
             message += f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n"
@@ -163,7 +154,7 @@ class Elwood(commands.Bot):
             message += "Last update: \n"
             message += f"<t:{int(time.time())}:R>"
             return message
-        except Exception as e: # An error has occurred. Print it and put it in the embed
+        except Exception as e: # An error has occurred. Print it and put it in the message
             if str(e) == "timed out":
                 message = "**Timed out**\nProbably a map restart or server is offline\n\nPing Guus if this is still happening after 5 minutes and if the server is online"
             else:
