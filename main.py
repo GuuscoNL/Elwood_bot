@@ -86,25 +86,29 @@ class Elwood(commands.Bot):
             except discord.NotFound:
                 self.msg = None
         if self.send_server_info == True:
-            em = await self.TBN() # Get the embed with the server info
+            message = await self.TBN() # Get the embed with the server info
             if self.msg == None: # if message doesn't exist create a new one
                 print(f"[{await self.current_time()}] Starting server info")
                 try:
-                    self.msg = await channel.send(embed=em, content="Connect to server: steam://connect/46.4.12.78:27015")
-                except discord.errors.HTTPException:
-                    self.msg = await channel.send(content="ERROR too many players online, discord can't handle it (Must be 1024 or fewer in length.) \nWill be fixed in the future, I hope\n<@397046303378505729>")
+                    self.msg = await channel.send(content=message)
+                except discord.errors.HTTPException as e:
+                    self.msg = await channel.send(content=f"ERROR too many players online, discord can't handle it (Must be 2000 or fewer characters.)\nMax players possible across both servers: 54\nMight get fixed in the future, I hope\n<@397046303378505729>\nLast update: <t:{int(time.time())}:R>")
+                    print(e)
                 except Exception as e:
                     self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
+                    print(e)
                 await self.update_json_message_ID()
                     
             else:
                 if debug: print(f"[{await self.current_time()}] Updated server information")
                 try:
-                    await self.msg.edit(embed=em, content="Connect to server: steam://connect/46.4.12.78:27015")
-                except discord.errors.HTTPException:
-                    self.msg = await channel.send(content="ERROR too many players online, discord can't handle it (Must be 1024 or fewer in length.) \nWill be fixed in the future, I hope\n<@397046303378505729>")
+                    await self.msg.edit(content=message)
+                except discord.errors.HTTPException as e:
+                    self.msg = await self.msg.edit(content=f"ERROR too many players online, discord can't handle it (Must be 2000 or fewer characters.)\nMax players possible across both servers: 54\nMight get fixed in the future, I hope\n<@397046303378505729>\nLast update: <t:{int(time.time())}:R>")
+                    print(e)
                 except Exception as e:
-                    self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
+                    self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
+                    print(e)
     
     @background.before_loop
     async def before_background(self):
@@ -139,7 +143,7 @@ class Elwood(commands.Bot):
             event_table = await self.Get_table(event_address)
             info_server_main = a2s.info(main_address)
             info_server_event = a2s.info(event_address)
-            
+            """
             #  ------ Make the embed ------ 
             em = discord.Embed(title="Server information", 
                             description="", #f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n```{main_table}```Last update <t:{int(time.time())}:R>", 
@@ -148,7 +152,15 @@ class Elwood(commands.Bot):
             em.add_field(name="Main server:", value=f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n```{main_table}```", inline=False)
             em.add_field(name="Event server:", value=f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n```{event_table}```", inline=False)
             em.add_field(name="Last update:", value=f"<t:{int(time.time())}:R>", inline=False)
-            return em
+            """
+            message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
+            message += "**Main server:**\n"
+            message += f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n"
+            message += f"```{main_table}```"
+            message += f"```{event_table}```\n"
+            message += "Last update: \n"
+            message += f"<t:{int(time.time())}:R>"
+            return message
         except Exception as e: # An error has occurred. Print it and put it in the embed
             if str(e) == "timed out":
                 em = discord.Embed(title="Timed out",description=f"Probably a map restart or server is offline")
@@ -162,9 +174,20 @@ class Elwood(commands.Bot):
         # ------ Get players online from server ------ 
         players_server = a2s.players(address)
         # ------ Make a list so that table2ascii can read it ------ 
+        """ debug stuff. To test max players
+        players = []
+        for i in range(27):
+            players.append(["GuuscoNL_"+ str(i),"00:00:00"])
+        
+        output = table2ascii(
+                            header=["Player", "Time Played"],
+                            body=players
+                                )
+        """
         players = []
         for i in range(len(players_server)):
             time_played = str(datetime.timedelta(seconds=int(players_server[0+i].duration))) # Convert seconds to h:m:s
+
             player_name = players_server[0+i].name
             if player_name == "": # If player_name == "" than they are still connecting
                 player_name = "Connecting..."
@@ -180,7 +203,5 @@ class Elwood(commands.Bot):
 
 bot = Elwood()
 bot.run(TOKEN) # run the bot with the token
-
-    
 
 
