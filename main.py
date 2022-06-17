@@ -167,7 +167,7 @@ class Elwood(commands.Bot):
                 em.set_footer(text="Ping Guus if this is still happening after 5 mins")
             else:
                 print(f"--------------------------\n[{await self.current_time()}]\nERROR:\n{e}\n--------------------------\n")
-                em = discord.Embed(title="An error occurred",description=e+"\nFIX THIS <@397046303378505729>",)
+                em = discord.Embed(title="An error occurred",description=f"{e}\nFIX THIS <@397046303378505729>",)
             return em
         
     async def Get_table(self, address):
@@ -187,8 +187,11 @@ class Elwood(commands.Bot):
         players = []
         for i in range(len(players_server)):
             time_played = str(datetime.timedelta(seconds=int(players_server[0+i].duration))) # Convert seconds to h:m:s
-
+            time_played = time_played[0:4] # only show hours and minutes
             player_name = players_server[0+i].name
+            max_char = 17
+            if len(player_name) > max_char:
+                player_name = player_name[0:max_char-3]+"..."
             if player_name == "": # If player_name == "" than they are still connecting
                 player_name = "Connecting..."
             temp = [player_name, time_played]
