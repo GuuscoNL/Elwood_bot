@@ -148,10 +148,10 @@ class Elwood(commands.Bot):
             message += "**Main server:**\n"
             message += f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n"
             message += f"```{main_table}```"
-            message += "**Event server:**\n"
+            message += "\n**Event server:**\n"
             message += f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n"
             message += f"```{event_table}```\n"
-            message += "Last update: \n"
+            message += "**Last update:** \n"
             message += f"<t:{int(time.time())}:R>"
             return message
         except Exception as e: # An error has occurred. Print it and put it in the message
