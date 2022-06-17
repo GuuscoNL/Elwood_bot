@@ -18,11 +18,8 @@ class guus(commands.Cog):
    
    async def guus(self, interaction : discord.Interaction) -> None:
       explanation = "In Dutch, a G is pronounced quite like the German [ch], as in Bach. Or, while it doesn't exist in Standard English, you might also be familiar with this sound in Scottish words like “loch” and “ach.”"
-      em = discord.Embed(title="How to pronounce Guus:", 
-                            description=explanation )
-      em.add_field(name="Video:", value="https://www.youtube.com/watch?v=JsUJV2zvQtY")
-      await interaction.response.send_message(embed= em, ephemeral=True)
-
+      await interaction.response.send_message(content=f"{explanation}\n\nVideo: https://www.youtube.com/watch?v=JsUJV2zvQtY", ephemeral=True)
+      
 async def setup(bot : commands.Bot) -> None:
    await bot.add_cog(
       guus(bot),
