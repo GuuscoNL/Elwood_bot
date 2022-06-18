@@ -51,6 +51,9 @@ class help(commands.Cog):
       
       `/guus`
       Gives an explanation and a video on how to pronounce Guus correctly
+      
+      `/stardate`
+      Get the current date converted to a stardate (year 2382)
       '''
       em.add_field(name="Public commands:", value=public_help)
       return em

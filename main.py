@@ -56,6 +56,7 @@ class Elwood(commands.Bot):
         await self.load_extension("cogs.invite")
         await self.load_extension("cogs.json")
         await self.load_extension("cogs.debug")
+        await self.load_extension("cogs.stardate")
         await bot.tree.sync(guild = discord.Object(id = SERVER_ID))
         self.background.start()
     
