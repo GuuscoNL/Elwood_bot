@@ -15,7 +15,7 @@ class stardate(commands.Cog):
    
    @app_commands.command(
       name = "stardate",
-      description = "Get the current date converted to a stardate (year 2382)")
+      description = "Get the current date converted to a stardate (year 2381)")
    
    async def stardate(self, interaction : discord.Interaction) -> None:
       b = 2323 # reference earthdate
