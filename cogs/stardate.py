@@ -22,7 +22,7 @@ class stardate(commands.Cog):
       c = 0 # reference stardate
 
       t = datetime.datetime.now().timetuple() # Get current time
-      year = t.tm_year + 360 # convert current year to correct year (2022 = 2382, so + 360)
+      year = t.tm_year + 359 # convert current year to correct year (2022 = 2381, so + 359)
 
       if year % 400 == 0 or (year % 4 == 0 and year % 100 != 0): #check if leap year
             n = 366
