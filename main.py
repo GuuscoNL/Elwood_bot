@@ -138,29 +138,39 @@ class Elwood(commands.Bot):
     async def TBN(self): # Get server info
         try:
             # ------ Get tables and get server infos ------ 
-            main_address = ("46.4.12.78", 27015)
-            event_address = ("46.4.12.78", 27016) 
-            main_table = await self.Get_table(main_address)
-            event_table = await self.Get_table(event_address)
-            info_server_main = a2s.info(main_address)
-            info_server_event = a2s.info(event_address)
-
+            try:
+                main_address = ("46.4.12.78", 27015)
+                main_table = f"```{await self.Get_table(main_address)}```\n"
+                info_server_main = a2s.info(main_address)
+                players_main = f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n"
+            except Exception as e:
+                if str(e) == "timed out":
+                    players_main = ""
+                    main_table = "`Timed out`\nProbably a map restart or the server is offline\n\nPing Guus if this is still happening after 5 minutes *while* the server is online.\n\n"
+            
+            try:
+                event_address = ("46.4.12.78", 27016) 
+                event_table = f"```{await self.Get_table(event_address)}```\n"
+                info_server_event = a2s.info(event_address)
+                players_event = f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n"
+            except Exception as e:
+                if str(e) == "timed out":
+                    players_event = ""
+                    event_table = "`Timed out`\nProbably a map restart or the server is offline\n\nPing Guus if this is still happening after 5 minutes *while* the server is online.\n\n"
+            
             message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
             message += "**Main server:**\n"
-            message += f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n"
-            message += f"```{main_table}```"
-            message += "\n**Event server:**\n"
-            message += f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n"
-            message += f"```{event_table}```\n"
+            message += players_main
+            message += main_table
+            message += "**Event server:**\n"
+            message += players_event
+            message += event_table
             message += "**Last update:** \n"
             message += f"<t:{int(time.time())}:R>"
             return message
         except Exception as e: # An error has occurred. Print it and put it in the message
-            if str(e) == "timed out":
-                message = "**Timed out**\nProbably a map restart or server is offline\n\nPing Guus if this is still happening after 5 minutes and if the server is online"
-            else:
-                print(f"--------------------------\n[{await self.current_time()}]\nERROR:\n{e}\n--------------------------\n")
-                message = f"**An error occurred**\n\n{e}\nFIX THIS <@397046303378505729>"
+            print(f"-----------------------------------\n[{await self.current_time()}] ERROR:\n{e}\n-----------------------------------\n")
+            message = f"**An error occurred**\n\n{e}\nFIX THIS <@397046303378505729>"
             return message
         
     async def Get_table(self, address):
