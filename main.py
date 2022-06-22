@@ -93,7 +93,7 @@ class Elwood(commands.Bot):
                 try:
                     self.msg = await channel.send(content=message)
                 except discord.errors.HTTPException as e:
-                    self.msg = await channel.send(content=f"ERROR too many players online, discord can't handle it (Must be 2000 or fewer characters.)\nMax players possible across both servers: 54\nMight get fixed in the future, I hope\n<@397046303378505729>\nLast update: <t:{int(time.time())}:R>")
+                    self.msg = await channel.send(content=await self.too_many_players())
                     print(e)
                 except Exception as e:
                     self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
@@ -105,7 +105,7 @@ class Elwood(commands.Bot):
                 try:
                     await self.msg.edit(content=message)
                 except discord.errors.HTTPException as e:
-                    self.msg = await self.msg.edit(content=f"ERROR too many players online, discord can't handle it (Must be 2000 or fewer characters.)\nMax players possible across both servers: 54\nMight get fixed in the future, I hope\n<@397046303378505729>\nLast update: <t:{int(time.time())}:R>")
+                    self.msg = await self.msg.edit(content=await self.too_many_players())
                     print(e)
                 except Exception as e:
                     self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
@@ -177,10 +177,10 @@ class Elwood(commands.Bot):
         # ------ Get players online from server ------ 
         players_server = a2s.players(address)
         # ------ Make a list so that table2ascii can read it ------ 
-        """ debug stuff. To test max players
+        """ #debug stuff. To test max players
         players = []
-        for i in range(27):
-            players.append(["GuuscoNL_"+ str(i),"00:00:00"])
+        for i in range(21):
+            players.append(["GuuscoNL_"+ str(i) + (6*"0"),"00:00:00"])
         
         output = table2ascii(
                             header=["Player", "Time Played"],
@@ -199,7 +199,7 @@ class Elwood(commands.Bot):
                 player_name = "Connecting..."
             temp = [player_name, time_played]
             players.append(temp)
-
+        
         #  ------ Make the table ------ 
         output = table2ascii(
                             header=["Player", "Time Played"],
@@ -207,6 +207,25 @@ class Elwood(commands.Bot):
                                 )
         return output
 
+    async def too_many_players(self):
+        main_address = ("46.4.12.78", 27015)
+        info_server_main = a2s.info(main_address)
+        players_main = f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n"
+        event_address = ("46.4.12.78", 27016) 
+        info_server_event = a2s.info(event_address)
+        players_event = f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n"
+        
+        ERROR_MESSAGE = f"\n**Players not shown**\nToo many players online, discord can't handle it\n\n"
+        
+        message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
+        message += "**Main server:**\n"
+        message += players_main
+        message += "\n**Event server:**\n"
+        message += players_event
+        message += ERROR_MESSAGE
+        message += "**Last update:** \n"
+        message += f"<t:{int(time.time())}:R>"
+        return message
 bot = Elwood()
 bot.run(TOKEN) # run the bot with the token
 
