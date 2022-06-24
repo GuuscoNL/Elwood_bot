@@ -196,7 +196,10 @@ class Elwood(commands.Bot):
             if len(player_name) > max_char:
                 player_name = player_name[0:max_char-3]+"..."
             if player_name == "": # If player_name == "" than they are still connecting
-                player_name = "Connecting..."
+                if address[1] == 27016:
+                    player_name = "Transporting..."
+                else:
+                    player_name = "Connecting..."
             temp = [player_name, time_played]
             players.append(temp)
         
