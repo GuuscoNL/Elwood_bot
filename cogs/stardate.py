@@ -18,22 +18,46 @@ class stardate(commands.Cog):
       description = "Get the current date converted to a stardate (year 2381)")
    
    async def stardate(self, interaction : discord.Interaction) -> None:
-      b = 2323 # reference earthdate
-      c = 0 # reference stardate
+      START_YEAR_REAL = 2022
+      START_YEAR_RP   = 2380
 
-      t = datetime.datetime.now().timetuple() # Get current time
-      year = t.tm_year + 359 # convert current year to correct year (2022 = 2381, so + 359)
+      # Stardate Configuration.
+      STARDATE_STANDARD_YEAR  = 2323
+      STARDATE_START_YEAR     = 0
+      MONTHTABLE = [
+         0,
+         31,
+         59,
+         90,
+         120,
+         151,
+         181,
+         212,
+         243,
+         273,
+         304,
+         334,
+      ]
 
-      if year % 400 == 0 or (year % 4 == 0 and year % 100 != 0): #check if leap year
-            n = 366
+      dateTable = datetime.datetime.now()
+      # Time Offset
+      y = dateTable.year + START_YEAR_RP - START_YEAR_REAL
+      # Check if current year is a leap year
+      n = 0
+      if dateTable.year % 400 == 0 or (dateTable.year % 4 == 0 and dateTable.year % 100 != 0):
+         n = 366
       else:
-            n = 365
-
-      result = format(((c + (1000*(year - b))) +
-                           ((1000/((n)*1440.0))*(((
-                           t.tm_yday - 1.0)*1440.0) +
-                           (t.tm_hour*60.0) + t.tm_min))), '.2f')
-      await interaction.response.send_message(f"Current stardate is {result}", ephemeral=True)
+         n = 365
+      monthOffset = MONTHTABLE[dateTable.month]
+      stardate = STARDATE_START_YEAR + (1000 * (y - STARDATE_STANDARD_YEAR)) + ((1000 / n) * (
+         monthOffset
+         + (dateTable.day - 1)
+         + (dateTable.hour / 24)
+         + (dateTable.minute / (24 * 60)
+         + (dateTable.second / (24 * 3600)))
+      ))
+      stardate = format(stardate, ".2f")
+      await interaction.response.send_message(f"Current stardate is {stardate}", ephemeral=True)
 
 
 async def setup(bot : commands.Bot) -> None:
