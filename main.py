@@ -29,6 +29,7 @@ with path_json.open(mode="r+") as file:
     json_data["message_ID"] = 987496250091913236
     json_data["send_server_info"] = True
     json_data["debug"] = False
+    json_data["sleep_mode"] = False
     file.seek(0)
     temp = json.dumps(json_data, indent=3)
     file.truncate(0)
@@ -43,6 +44,8 @@ class Elwood(commands.Bot):
             application_id = 979113489387884554)
         self.send_server_info = False
         self.msg = None
+        self.sleep_unix_time = None
+        self.new_time = True
 
     async def setup_hook(self): 
         self.session = aiohttp.ClientSession()
@@ -57,6 +60,7 @@ class Elwood(commands.Bot):
         await self.load_extension("cogs.json")
         await self.load_extension("cogs.debug")
         await self.load_extension("cogs.stardate")
+        await self.load_extension("cogs.sleep_mode")
         await bot.tree.sync(guild = discord.Object(id = SERVER_ID))
         self.background.start()
     
@@ -81,12 +85,14 @@ class Elwood(commands.Bot):
             json_data = json.loads(file.read())
             msg_ID = json_data["message_ID"]
             debug = json_data["debug"]
+            sleep_mode = json_data["sleep_mode"]
             self.send_server_info = json_data["send_server_info"]
             try:
                 self.msg = await channel.fetch_message(msg_ID)
             except discord.NotFound:
                 self.msg = None
-        if self.send_server_info == True:
+        if self.send_server_info and not sleep_mode:
+            self.new_time = True
             message = await self.TBN() # Get the message with the server info
             if self.msg == None: # if message doesn't exist create a new one
                 print(f"[{await self.current_time()}] Starting server info")
@@ -110,6 +116,15 @@ class Elwood(commands.Bot):
                 except Exception as e:
                     self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
                     print(e)
+        elif sleep_mode:
+            try:
+                if self.new_time: self.sleep_unix_time = time.time()
+                await self.msg.edit(content=await self.sleep_mode_message(self.sleep_unix_time))
+                self.new_time = False
+                    
+            except Exception as e:
+                self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
+                print(e)
     
     @background.before_loop
     async def before_background(self):
@@ -229,6 +244,14 @@ class Elwood(commands.Bot):
         message += "**Last update:** \n"
         message += f"<t:{int(time.time())}:R>"
         return message
+    
+    async def sleep_mode_message(self, unix_time):
+        message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
+        message += "I am sleeping, please do not disturb me. I will not respond to anything."
+        message += "\n\n**Last awake:** \n"
+        message += f"<t:{int(unix_time)}:R>"
+        return message
+        
 bot = Elwood()
 bot.run(TOKEN) # run the bot with the token
 

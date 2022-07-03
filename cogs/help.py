@@ -76,6 +76,9 @@ class help(commands.Cog):
       
       `/debug`
       Toggles debug variable
+      
+      `/sleep_mode`
+      Toggles sleep_mode variable
       '''
       em.add_field(name="Admin commands:", value=admin_help)
       return em
