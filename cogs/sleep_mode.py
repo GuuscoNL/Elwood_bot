@@ -36,7 +36,7 @@ class sleep_mode(commands.Cog):
       if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
          if interaction.user.id == 397046303378505729:# Check if the author is me (GuuscoNL)
             await self.update_json()
-            msg = f"The debug variable is set to {self.last_toggle}"
+            msg = f"The sleep_mode variable is set to {self.last_toggle}"
             await interaction.response.send_message(msg, ephemeral=True)
             print(f"[{await self.current_time()}] {interaction.user.name} changed sleep_mode to {self.last_toggle}")
          else:
