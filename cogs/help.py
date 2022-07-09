@@ -79,6 +79,9 @@ class help(commands.Cog):
       
       `/sleep_mode`
       Toggles sleep_mode variable
+      
+      `/talk`
+      Makes the bot talk in the current channel. Put the text you want the bot to say in the text parameter
       '''
       em.add_field(name="Admin commands:", value=admin_help)
       return em
