@@ -9,8 +9,6 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from table2ascii import table2ascii
 
-#TODO: Find a way to store message ID after restart. using a JSON file only works 
-# locally, because heroku does not save the JSON file between restarts.
 
 # ------ Constants that must be changed in .env for every server the bot is in ------ 
 load_dotenv() # load all the variables from the env file
@@ -79,7 +77,7 @@ class Elwood(commands.Bot):
     #         is_admin = await self.check_permission(message.author.roles, ADMIN_ROLE_ID) # Check if the author has the admin role
 
     @tasks.loop(seconds=UPDATE_DELAY)
-    async def background(self):
+    async def background(self) -> None:
         channel = self.get_channel(CHANNEL_ID_SERVER_INFO) # Get the channel where the server info will be posted
         with path_json.open() as file:
             json_data = json.loads(file.read())
@@ -93,6 +91,31 @@ class Elwood(commands.Bot):
                 self.msg = None
         if self.send_server_info and not sleep_mode:
             self.new_time = True
+            event_address = ("46.4.12.78", 27015) 
+            info_server_event = a2s.info(event_address)
+            if info_server_event.server_name == "": #TODO: put the server name when the server is in maintenance mode
+                if self.msg == None:
+                    print(f"[{await self.current_time()}] Starting server info")
+                    try:
+                        self.msg = await channel.send(content=await self.maintenance_mode_message())
+                    except discord.errors.HTTPException as e:
+                        self.msg = await channel.send(content=await self.too_many_players())
+                        print(e)
+                    except Exception as e:
+                        self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
+                        print(e)
+                    await self.update_json_message_ID()
+                else:
+                    if debug: print(f"[{await self.current_time()}] Updated server information")
+                    try:
+                        await self.msg.edit(content=await self.maintenance_mode_message())
+                    except discord.errors.HTTPException as e:
+                        self.msg = await self.msg.edit(content=await self.too_many_players())
+                        print(e)
+                    except Exception as e:
+                        self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
+                        print(e)
+                return
             message = await self.TBN() # Get the message with the server info
             if self.msg == None: # if message doesn't exist create a new one
                 print(f"[{await self.current_time()}] Starting server info")
@@ -127,21 +150,21 @@ class Elwood(commands.Bot):
                 print(e)
     
     @background.before_loop
-    async def before_background(self):
+    async def before_background(self) -> None:
         await self.wait_until_ready()
         print(f"[{await self.current_time()}] Server info ready")
 
-    async def check_permission(self, user_perms, needed_perm_id): # Check if the user has a specific role
+    async def check_permission(self, user_perms, needed_perm_id) -> bool: # Check if the user has a specific role
         for i in range(len(user_perms)):
             if user_perms[i].id == needed_perm_id:
                 return True
         return False
     
-    async def current_time(self): # Get current time
+    async def current_time(self) -> None: # Get current time
         now = datetime.datetime.utcnow()
         return now.strftime("%d/%m/%Y %H:%M:%S UTC")
     
-    async def update_json_message_ID(self):
+    async def update_json_message_ID(self) -> None:
         with path_json.open(mode="r+") as file:
             json_data = json.loads(file.read())
             json_data["message_ID"] = self.msg.id
@@ -150,7 +173,7 @@ class Elwood(commands.Bot):
             file.truncate(0)
             file.write(temp)
             
-    async def TBN(self): # Get server info
+    async def TBN(self) -> str: # Get server info
         try:
             # ------ Get tables and get server infos ------ 
             try:
@@ -188,7 +211,7 @@ class Elwood(commands.Bot):
             message = f"**An error occurred**\n\n{e}\nFIX THIS <@397046303378505729>"
             return message
         
-    async def Get_table(self, address):
+    async def Get_table(self, address) -> str:
         # ------ Get players online from server ------ 
         players_server = a2s.players(address)
         # ------ Make a list so that table2ascii can read it ------ 
@@ -225,7 +248,7 @@ class Elwood(commands.Bot):
                                 )
         return output
 
-    async def too_many_players(self):
+    async def too_many_players(self) -> str:
         main_address = ("46.4.12.78", 27015)
         info_server_main = a2s.info(main_address)
         players_main = f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n"
@@ -245,11 +268,16 @@ class Elwood(commands.Bot):
         message += f"<t:{int(time.time())}:R>"
         return message
     
-    async def sleep_mode_message(self, unix_time):
+    async def sleep_mode_message(self, unix_time) -> str:
         message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
         message += "I am sleeping, please do not disturb me. I will not respond to anything."
         message += "\n\n**Last awake:** \n"
         message += f"<t:{int(unix_time)}:R>"
+        return message
+    
+    async def maintenance_mode_message(self) -> str:
+        message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
+        message += "The server is currently in maintenance mode."
         return message
         
 bot = Elwood()
