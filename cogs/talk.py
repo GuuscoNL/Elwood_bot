@@ -25,7 +25,8 @@ class talk(commands.Cog):
     
     @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @talk.error
     async def talk(self, interaction : discord.Interaction, text : str) -> None:
-        await interaction.response.send_message(content=f"Saying:\n> {text}", ephemeral=True)
+        text = text.replace("\\n", "\n")
+        await interaction.response.send_message(content=f"**Saying:**\n{text}", ephemeral=True)
         await interaction.channel.send(content=text)
         print(f"[{await self.current_time()}] {interaction.user.name} used the talk command and said: \"{text}\"")
         
@@ -33,7 +34,8 @@ class talk(commands.Cog):
     async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError, text : str) -> None:
         if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
             if interaction.user.id == 397046303378505729:# Check if the author is me (GuuscoNL)
-                await interaction.response.send_message(content=f"Saying:\n> {text}", ephemeral=True)
+                text = text.replace("\\n", "\n")
+                await interaction.response.send_message(content=f"**Saying:**\n{text}", ephemeral=True)
                 await interaction.channel.send(content=text)
                 print(f"[{await self.current_time()}] {interaction.user.name} used the talk command and said: \"{text}\"")
             else:
@@ -43,6 +45,7 @@ class talk(commands.Cog):
     async def current_time(self): # Get current time
       now = datetime.datetime.utcnow()
       return now.strftime("%d/%m/%Y %H:%M:%S UTC")
+
 
 async def setup(bot : commands.Bot) -> None:
     await bot.add_cog(
