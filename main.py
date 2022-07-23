@@ -92,8 +92,8 @@ class Elwood(commands.Bot):
                 self.msg = None
         if self.send_server_info and not sleep_mode:
             self.new_time = True
-            event_address = ("46.4.12.78", 27015) 
-            info_server_event = a2s.info(event_address)
+            main_address = ("46.4.12.78", 27015) 
+            info_server_event = a2s.info(main_address)
             if info_server_event.server_name == "": #TODO: put the server name when the server is in maintenance mode
                 if self.msg == None:
                     print(f"[{await self.current_time()}] Starting server info")
@@ -183,7 +183,7 @@ class Elwood(commands.Bot):
                 info_server_main = a2s.info(main_address)
                 players_main = f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n"
             except Exception as e:
-                if str(e) == "timed out":
+                if e == TimeoutError:
                     players_main = ""
                     main_table = "`Timed out`\nProbably a map restart or the server is offline\n\nPing Guus if this is still happening after 5 minutes *while* the server is online.\n\n"
             
@@ -193,7 +193,7 @@ class Elwood(commands.Bot):
                 info_server_event = a2s.info(event_address)
                 players_event = f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n"
             except Exception as e:
-                if str(e) == "timed out":
+                if e == TimeoutError:
                     players_event = ""
                     event_table = "`Timed out`\nProbably a map restart or the server is offline\n\nPing Guus if this is still happening after 5 minutes *while* the server is online.\n\n"
             
