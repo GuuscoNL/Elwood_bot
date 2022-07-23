@@ -182,21 +182,27 @@ class Elwood(commands.Bot):
                 main_table = f"```{await self.Get_table(main_address)}```\n"
                 info_server_main = a2s.info(main_address)
                 players_main = f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n"
+            except TimeoutError:
+                players_main = ""
+                main_table = "`Timed out`\nProbably a map restart or the server is offline\n\nPing Guus if this is still happening after 5 minutes *while* the server is online.\n\n"
             except Exception as e:
-                if e == TimeoutError:
-                    players_main = ""
-                    main_table = "`Timed out`\nProbably a map restart or the server is offline\n\nPing Guus if this is still happening after 5 minutes *while* the server is online.\n\n"
+                players_main = f"{type(e)}\n"
+                main_table = ""
             
             try:
                 event_address = ("46.4.12.78", 27016) 
                 event_table = f"```{await self.Get_table(event_address)}```\n"
                 info_server_event = a2s.info(event_address)
                 players_event = f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n"
+                
+            except TimeoutError:
+                players_event = ""
+                event_table = "`Timed out`\nProbably a map restart or the server is offline\n\nPing Guus if this is still happening after 5 minutes *while* the server is online.\n\n"
+                
             except Exception as e:
-                if e == TimeoutError:
-                    players_event = ""
-                    event_table = "`Timed out`\nProbably a map restart or the server is offline\n\nPing Guus if this is still happening after 5 minutes *while* the server is online.\n\n"
-            
+                players_event = f"{type(e)}\n"
+                event_table = ""
+                
             message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
             message += "**Main server:**\n"
             message += players_main
