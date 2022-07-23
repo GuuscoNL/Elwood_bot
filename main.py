@@ -94,7 +94,7 @@ class Elwood(commands.Bot):
             self.new_time = True
             main_address = ("46.4.12.78", 27015) 
             info_server_event = a2s.info(main_address)
-            if info_server_event.server_name == "": #TODO: put the server name when the server is in maintenance mode
+            if "Maintenance" in info_server_event.server_name: #Should work...
                 if self.msg == None:
                     print(f"[{await self.current_time()}] Starting server info")
                     try:
