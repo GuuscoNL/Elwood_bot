@@ -15,11 +15,11 @@ class stardate(commands.Cog):
    
    @app_commands.command(
       name = "stardate",
-      description = "Get the current date converted to a stardate (year 2381)")
+      description = "Get the current date converted to a stardate (year 2382)")
    
    async def stardate(self, interaction : discord.Interaction) -> None:
       START_YEAR_REAL = 2022
-      START_YEAR_RP   = 2380
+      START_YEAR_RP   = 2382
 
       # Stardate Configuration.
       STARDATE_STANDARD_YEAR  = 2323
@@ -39,7 +39,7 @@ class stardate(commands.Cog):
          334,
       ]
 
-      dateTable = datetime.datetime.now()
+      dateTable = datetime.datetime.utcnow()
       # Time Offset
       y = dateTable.year + START_YEAR_RP - START_YEAR_REAL
       # Check if current year is a leap year
