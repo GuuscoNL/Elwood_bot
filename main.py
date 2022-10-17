@@ -80,6 +80,8 @@ class Elwood(commands.Bot):
     @tasks.loop(seconds=UPDATE_DELAY)
     async def background(self) -> None:
         channel = self.get_channel(CHANNEL_ID_SERVER_INFO) # Get the channel where the server info will be posted
+        
+        # ----- Open json file and read it -----
         with path_json.open() as file:
             json_data = json.loads(file.read())
             msg_ID = json_data["message_ID"]
@@ -90,39 +92,44 @@ class Elwood(commands.Bot):
                 self.msg = await channel.fetch_message(msg_ID)
             except discord.NotFound:
                 self.msg = None
-        if self.send_server_info and not sleep_mode:
+
+        if self.send_server_info and not sleep_mode: # Should the bot display the the players?
             self.new_time = True
             main_address = ("46.4.12.78", 27015) 
             info_server_event = a2s.info(main_address)
-            if "Maintenance" in info_server_event.server_name: #Should work...
+            
+            if "Maintenance" in info_server_event.server_name: # Is the server in Maintenance mode?
                 if self.msg == None:
                     print(f"[{await self.current_time()}] Starting server info")
+                    
                     try:
                         self.msg = await channel.send(content=await self.maintenance_mode_message())
-                    except discord.errors.HTTPException as e:
+                    except discord.errors.HTTPException as e: # too many characters in the message
                         self.msg = await channel.send(content=await self.too_many_players())
                         print(e)
                     except Exception as e:
                         self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
                         print(e)
                     await self.update_json_message_ID()
-                else:
+                
+                else: # display the players
                     if debug: print(f"[{await self.current_time()}] Updated server information")
                     try:
                         await self.msg.edit(content=await self.maintenance_mode_message())
-                    except discord.errors.HTTPException as e:
+                    except discord.errors.HTTPException as e: # too many characters in the message
                         self.msg = await self.msg.edit(content=await self.too_many_players())
                         print(e)
                     except Exception as e:
                         self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
                         print(e)
                 return
+            
             message = await self.TBN() # Get the message with the server info
             if self.msg == None: # if message doesn't exist create a new one
                 print(f"[{await self.current_time()}] Starting server info")
                 try:
                     self.msg = await channel.send(content=message)
-                except discord.errors.HTTPException as e:
+                except discord.errors.HTTPException as e: # too many characters in the message
                     self.msg = await channel.send(content=await self.too_many_players())
                     print(e)
                 except Exception as e:
@@ -130,16 +137,17 @@ class Elwood(commands.Bot):
                     print(e)
                 await self.update_json_message_ID()
                     
-            else:
+            else: # message exists
                 if debug: print(f"[{await self.current_time()}] Updated server information")
                 try:
                     await self.msg.edit(content=message)
-                except discord.errors.HTTPException as e:
+                except discord.errors.HTTPException as e: # too many characters in the message
                     self.msg = await self.msg.edit(content=await self.too_many_players())
                     print(e)
                 except Exception as e:
                     self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
                     print(e)
+        
         elif sleep_mode:
             try:
                 if self.new_time: self.sleep_unix_time = time.time()
