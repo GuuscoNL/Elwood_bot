@@ -14,48 +14,48 @@ from pathlib import Path
 path_dir = Path(__file__).parent.parent.resolve()
 path_json = path_dir / "data.JSON"
 
-class toggle_server(commands.Cog):
+class holiday_mode(commands.Cog):
 
    def __init__(self, bot : commands.Bot) -> None:
       self.bot  = bot
-      self.last_toggle = False
    
    @app_commands.command(
-      name = "toggle_server",
-      description = "toggles the send_server_info variable")
+      name = "holiday_mode",
+      description = "Toggles the mode to holiday_mode or back to normal mode")
 
    @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @toggle_server.error
    async def toggle_server(self, interaction : discord.Interaction) -> None:
-      await self.update_json()
-      msg = f"The send_server_info variable is set to {self.last_toggle}"
-      if self.last_toggle == True:
-         msg = msg + " (Will update within 60 seconds)"
+      mode = await self.update_json()
+      msg = f"Mode is set to to {mode}"
+      
       await interaction.response.send_message(msg, ephemeral=True)
-      print(f"[{await self.current_time()}] {interaction.user.name} changed send_server_info to {self.last_toggle}")
+      print(f"[{await self.current_time()}] {interaction.user.name} changed mode to {mode}")
       
    @toggle_server.error
    async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:
       if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
          if interaction.user.id == 397046303378505729:# Check if the author is me (GuuscoNL)
-            await self.update_json()
-            msg = f"The send_server_info variable is set to {self.last_toggle}"
-            if self.last_toggle == True:
-               msg = msg + " (Will update within 60 seconds)"
+            mode = await self.update_json()
+            msg = f"Mode is set to to {mode}"
+            
             await interaction.response.send_message(msg, ephemeral=True)
-            print(f"[{await self.current_time()}] {interaction.user.name} changed send_server_info to {self.last_toggle}")
+            print(f"[{await self.current_time()}] {interaction.user.name} changed mode to {mode}")
          else:
             await interaction.response.send_message("You do not have the permission!", ephemeral=True)
-            print(f"[{await self.current_time()}] {interaction.user.name} tried to use the `/toggle_server` command") # Log it
+            print(f"[{await self.current_time()}] {interaction.user.name} tried to use the `/holiday_mode` command") # Log it
    
    async def update_json(self):
       with path_json.open(mode="r+") as file:
          json_data = json.loads(file.read())
-         self.last_toggle = not json_data["send_server_info"]
-         json_data["send_server_info"] = self.last_toggle
+         if json_data["mode"] == 2:
+            json_data["mode"] = 1
+         else:
+            json_data["mode"] = 2
          file.seek(0)
          temp = json.dumps(json_data, indent=3)
          file.truncate(0)
          file.write(temp)
+      return json_data["mode"]
    
    async def current_time(self): # Get current time
       now = datetime.datetime.utcnow()
@@ -63,6 +63,6 @@ class toggle_server(commands.Cog):
 
 async def setup(bot : commands.Bot) -> None:
    await bot.add_cog(
-      toggle_server(bot),
+      holiday_mode(bot),
       guilds = [discord.Object(id = SERVER_ID)]
    )

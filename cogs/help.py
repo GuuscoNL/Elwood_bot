@@ -71,14 +71,14 @@ class help(commands.Cog):
      `/json`
       Shows what is in the data.JSON file
       
-      `/toggle_server`
-      Toggles send_server_info variable
+      `/holiday_mode`
+      Toggles the mode to holiday_mode or back to normal mode
       
       `/debug`
       Toggles debug variable
       
       `/sleep_mode`
-      Toggles sleep_mode variable
+      Toggles the mode to sleep_mode or back to normal mode
       
       `/talk`
       Makes the bot talk in the current channel. Put the text you want the bot to say in the text parameter

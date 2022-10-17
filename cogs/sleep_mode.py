@@ -18,27 +18,26 @@ class sleep_mode(commands.Cog):
 
    def __init__(self, bot : commands.Bot) -> None:
       self.bot  = bot
-      self.last_toggle = False
    
    @app_commands.command(
       name = "sleep_mode",
-      description = "Toggles the sleep_mode variable")
+      description = "Toggles the mode to sleep_mode or back to normal mode")
 
    @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @toggle_server.error
    async def debug(self, interaction : discord.Interaction) -> None:
-      await self.update_json()
-      msg = f"The `sleep_mode` variable is set to {self.last_toggle}"
+      mode = await self.update_json()
+      msg = f"Mode is set to to {mode}"
       await interaction.response.send_message(msg, ephemeral=True)
-      print(f"[{await self.current_time()}] {interaction.user.name} changed sleep_mode to {self.last_toggle}")
+      print(f"[{await self.current_time()}] {interaction.user.name} changed mode to {mode}")
       
    @debug.error
    async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:
       if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
          if interaction.user.id == 397046303378505729:# Check if the author is me (GuuscoNL)
-            await self.update_json()
-            msg = f"The sleep_mode variable is set to {self.last_toggle}"
+            mode = await self.update_json()
+            msg = f"Mode is set to {mode}"
             await interaction.response.send_message(msg, ephemeral=True)
-            print(f"[{await self.current_time()}] {interaction.user.name} changed sleep_mode to {self.last_toggle}")
+            print(f"[{await self.current_time()}] {interaction.user.name} changed mode to {mode}")
          else:
             await interaction.response.send_message("You do not have the permission!", ephemeral=True)
             print(f"[{await self.current_time()}] {interaction.user.name} tried to use the `/sleep_mode` command") # Log it
@@ -46,12 +45,15 @@ class sleep_mode(commands.Cog):
    async def update_json(self):
       with path_json.open(mode="r+") as file:
          json_data = json.loads(file.read())
-         self.last_toggle = not json_data["sleep_mode"]
-         json_data["sleep_mode"] = self.last_toggle
+         if json_data["mode"] == 0:
+            json_data["mode"] = 1
+         else:
+            json_data["mode"] = 0
          file.seek(0)
          temp = json.dumps(json_data, indent=3)
          file.truncate(0)
          file.write(temp)
+      return json_data["mode"]
    
    async def current_time(self): # Get current time
       now = datetime.datetime.utcnow()

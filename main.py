@@ -16,18 +16,22 @@ TOKEN =os.getenv('TOKEN')
 SERVER_ID = int(os.getenv('SERVER_ID'))
 CHANNEL_ID_SERVER_INFO = int(os.getenv('CHANNEL_ID_SERVER_INFO'))
 ADMIN_ROLE_ID = int(os.getenv('ADMIN_ROLE_ID'))
-UPDATE_DELAY = 60 # seconds
+UPDATE_DELAY = 10 # seconds
 
 from pathlib import Path
 path_dir = Path(__file__).parent.resolve()
 path_json = path_dir / "data.JSON"
 
+# MODES:
+#   0 = sleep_mode
+#   1 = Normal
+#   2 = Holiday
+
 with path_json.open(mode="r+") as file:
     json_data = {}
     json_data["message_ID"] = 987496250091913236
-    json_data["send_server_info"] = True
+    json_data["mode"] = 2
     json_data["debug"] = False
-    json_data["sleep_mode"] = False
     file.seek(0)
     temp = json.dumps(json_data, indent=3)
     file.truncate(0)
@@ -40,10 +44,10 @@ class Elwood(commands.Bot):
             command_prefix="!",
             intents = discord.Intents.all(),
             application_id = 979113489387884554)
-        self.send_server_info = False
         self.msg = None
         self.sleep_unix_time = None
-        self.new_time = True
+        self.new_time_sleep = True
+        self.new_time_holi = True
 
     async def setup_hook(self): 
         self.session = aiohttp.ClientSession()
@@ -52,7 +56,7 @@ class Elwood(commands.Bot):
         await self.load_extension("cogs.content")
         await self.load_extension("cogs.help")
         await self.load_extension("cogs.roll")
-        await self.load_extension("cogs.toggle_server")
+        await self.load_extension("cogs.holiday_mode")
         await self.load_extension("cogs.guus")
         await self.load_extension("cogs.invite")
         await self.load_extension("cogs.json")
@@ -86,15 +90,15 @@ class Elwood(commands.Bot):
             json_data = json.loads(file.read())
             msg_ID = json_data["message_ID"]
             debug = json_data["debug"]
-            sleep_mode = json_data["sleep_mode"]
-            self.send_server_info = json_data["send_server_info"]
+            mode = json_data["mode"]
             try:
                 self.msg = await channel.fetch_message(msg_ID)
             except discord.NotFound:
                 self.msg = None
 
-        if self.send_server_info and not sleep_mode: # Should the bot display the the players?
-            self.new_time = True
+        if mode == 1: # Should the bot should display the players
+            self.new_time_sleep = True
+            self.new_time_holi = True
             main_address = ("46.4.12.78", 27015) 
             info_server_event = a2s.info(main_address)
             
@@ -148,15 +152,51 @@ class Elwood(commands.Bot):
                     self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
                     print(e)
         
-        elif sleep_mode:
+        elif mode == 0: # Sleep_mode
+            self.new_time_holi = True
+            if self.msg == None: # if message doesn't exist create a new one
+                print(f"[{await self.current_time()}] Starting server info")
+                try:
+                    self.msg = await channel.send(content="...")
+                except discord.errors.HTTPException as e: # too many characters in the message
+                    self.msg = await channel.send(content=await self.too_many_players())
+                    print(e)
+                except Exception as e:
+                    self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
+                    print(e)
+                await self.update_json_message_ID()
+            
             try:
-                if self.new_time: self.sleep_unix_time = time.time()
+                if self.new_time_sleep: self.sleep_unix_time = time.time()
                 await self.msg.edit(content=await self.sleep_mode_message(self.sleep_unix_time))
-                self.new_time = False
+                self.new_time_sleep = False
                     
             except Exception as e:
                 self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
                 print(e)
+        
+        elif mode == 2: # Holiday_mode
+            self.new_time_sleep = True
+            if self.msg == None: # if message doesn't exist create a new one
+                print(f"[{await self.current_time()}] Starting server info")
+                try:
+                    self.msg = await channel.send(content="...")
+                except discord.errors.HTTPException as e: # too many characters in the message
+                    self.msg = await channel.send(content=await self.too_many_players())
+                    print(e)
+                except Exception as e:
+                    self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
+                    print(e)
+                await self.update_json_message_ID()
+            try:
+                if self.new_time_holi: self.sleep_unix_time = time.time()
+                await self.msg.edit(content=await self.holiday_mode_message(self.sleep_unix_time))
+                self.new_time_holi = False
+                    
+            except Exception as e:
+                self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
+                print(e)
+            
     
     @background.before_loop
     async def before_background(self) -> None:
@@ -287,6 +327,13 @@ class Elwood(commands.Bot):
         message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
         message += "I am sleeping, please do not disturb me. I will not respond to anything."
         message += "\n\n**Last awake:** \n"
+        message += f"<t:{int(unix_time)}:R>"
+        return message
+    
+    async def holiday_mode_message(self, unix_time) -> str:
+        message = "**Connect to server:** Server is on a hiatus\n\n"
+        message += "I am going back to Chicago to visit my brother Jake. \nIt's only 106 miles to Chicago, I got a full tank of gas, half a pack of cigarettes, it's dark... and I am wearing sunglasses.\n**HIT IT!**"
+        message += "\n\n**Went on holiday:** \n"
         message += f"<t:{int(unix_time)}:R>"
         return message
     
