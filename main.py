@@ -99,8 +99,12 @@ class Elwood(commands.Bot):
         if mode == 1: # Should the bot should display the players
             self.new_time_sleep = True
             self.new_time_holi = True
-            main_address = ("46.4.12.78", 27015) 
-            info_server_event = a2s.info(main_address)
+            try:
+                main_address = ("46.4.12.78", 27015) 
+                info_server_event = a2s.info(main_address)
+            except:
+                print(f"[{await self.current_time()}] Unable to get server info to check if it is in maintenance mode")
+                return
             
             if "Maintenance" in info_server_event.server_name: # Is the server in Maintenance mode?
                 if self.msg == None:
