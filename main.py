@@ -337,8 +337,9 @@ class Elwood(commands.Bot):
     async def holiday_mode_message(self, unix_time) -> str:
         message = "**Connect to server:** Server is on a hiatus\n\n"
         message += "I am going back to Chicago to visit my brother Jake. \nIt's only 106 miles to Chicago, I got a full tank of gas, half a pack of cigarettes, it's dark... and I am wearing sunglasses.\n**HIT IT!**"
-        message += "\n\n**Went on holiday:** \n"
-        message += f"<t:{int(unix_time)}:R>"
+        message += "\nTo calculate the stardate you can use this link: https://shorturl.at/BGRUZ"
+        message += "\n\n**Back from holiday:** \n"
+        message += f"<t:1667779200:R>"
         return message
     
     async def maintenance_mode_message(self) -> str:
