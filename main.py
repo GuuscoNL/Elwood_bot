@@ -99,21 +99,23 @@ class Elwood(commands.Bot):
         if mode == 1: # Should the bot display the players
             self.new_time_sleep = True
             self.new_time_holi = True
+            serverInMaintenance = False
             try:
                 main_address = ("46.4.12.78", 27015) 
                 info_server_event = a2s.info(main_address)
+                if "Maintenance" in info_server_event.server_name: serverInMaintenance = True
             except TimeoutError: # Let TBN() handle the error
                 pass
             except:
                 print(f"[{await self.current_time()}] Unable to get server info to check if it is in maintenance mode")
                 return
             
-            if "Maintenance" in info_server_event.server_name: # Is the server in Maintenance mode?
+            if serverInMaintenance: # Is the server in Maintenance mode?
                 if self.msg == None:
                     print(f"[{await self.current_time()}] Starting server info")
                     
                     try:
-                        self.msg = await channel.send(content=await self.maintenance_mode_message())
+                        self.msg = await channel.send(content=await self.maintenance_mode_message(), suppress=True)
                     except discord.errors.HTTPException as e: # too many characters in the message
                         self.msg = await channel.send(content=await self.too_many_players())
                         print(e)
@@ -125,7 +127,7 @@ class Elwood(commands.Bot):
                 else: # display the players
                     if debug: print(f"[{await self.current_time()}] Updated server information")
                     try:
-                        await self.msg.edit(content=await self.maintenance_mode_message())
+                        await self.msg.edit(content=await self.maintenance_mode_message(), suppress=True)
                     except discord.errors.HTTPException as e: # too many characters in the message
                         self.msg = await self.msg.edit(content=await self.too_many_players())
                         print(e)
@@ -196,7 +198,7 @@ class Elwood(commands.Bot):
                 await self.update_json_message_ID()
             try:
                 if self.new_time_holi: self.sleep_unix_time = time.time()
-                await self.msg.edit(content=await self.holiday_mode_message(self.sleep_unix_time))
+                await self.msg.edit(content=await self.holiday_mode_message(self.sleep_unix_time), suppress=True)
                 self.new_time_holi = False
                     
             except Exception as e:
