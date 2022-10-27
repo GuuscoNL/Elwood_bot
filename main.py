@@ -96,12 +96,14 @@ class Elwood(commands.Bot):
             except discord.NotFound:
                 self.msg = None
 
-        if mode == 1: # Should the bot should display the players
+        if mode == 1: # Should the bot display the players
             self.new_time_sleep = True
             self.new_time_holi = True
             try:
                 main_address = ("46.4.12.78", 27015) 
                 info_server_event = a2s.info(main_address)
+            except TimeoutError: # Let TBN() handle the error
+                pass
             except:
                 print(f"[{await self.current_time()}] Unable to get server info to check if it is in maintenance mode")
                 return
