@@ -27,15 +27,15 @@ path_json = path_dir / "data.JSON"
 #   1 = Normal
 #   2 = Holiday
 
-with path_json.open(mode="r+") as file:
-    json_data = {}
-    json_data["message_ID"] = 987496250091913236
-    json_data["mode"] = 2
-    json_data["debug"] = False
-    file.seek(0)
-    temp = json.dumps(json_data, indent=3)
-    file.truncate(0)
-    file.write(temp)
+# with path_json.open(mode="r+") as file:
+#     json_data = {}
+#     json_data["message_ID"] = 987496250091913236
+#     json_data["mode"] = 2
+#     json_data["debug"] = False
+#     file.seek(0)
+#     temp = json.dumps(json_data, indent=3)
+#     file.truncate(0)
+#     file.write(temp)
 
 class Elwood(commands.Bot):
 
