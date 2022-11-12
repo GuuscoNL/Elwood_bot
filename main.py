@@ -233,10 +233,6 @@ class Elwood(commands.Bot):
                 return True
         return False
     
-    async def current_time(self) -> None: # Get current time
-        now = datetime.datetime.utcnow()
-        return now.strftime("%d/%m/%Y %H:%M:%S UTC")
-    
     async def update_json_message_ID(self) -> None:
         with path_json.open(mode="r+") as file:
             json_data = json.loads(file.read())
