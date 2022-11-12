@@ -5,6 +5,7 @@ import os
 import aiohttp
 import time
 import json
+import logging
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from table2ascii import table2ascii
@@ -18,9 +19,24 @@ CHANNEL_ID_SERVER_INFO = int(os.getenv('CHANNEL_ID_SERVER_INFO'))
 ADMIN_ROLE_ID = int(os.getenv('ADMIN_ROLE_ID'))
 UPDATE_DELAY = 60*5 # seconds
 
+
+# ------ Initialise some stuff ------ 
 from pathlib import Path
 path_dir = Path(__file__).parent.resolve()
 path_json = path_dir / "data.JSON"
+
+# logging
+logger = logging.getLogger("main")
+
+formatter = logging.Formatter("[%(asctime)s] %(levelname)s:%(name)s: %(message)s",
+                              "%Y-%m-%d %H:%M:%S")
+
+file_handler = logging.FileHandler("main.log")
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+logger.setLevel(logging.INFO)
+
 
 # MODES:
 #   0 = sleep_mode
@@ -68,7 +84,7 @@ class Elwood(commands.Bot):
         self.background.start()
     
     async def on_ready(self):
-        print(f"[{await self.current_time()}] {self.user} has connected to Discord!")
+        logger.info(f"{self.user} has connected to Discord!")
         
     # async def on_message(self, message):
     #     # ------ Check that the message is not from the bot itself ------ 
@@ -89,7 +105,7 @@ class Elwood(commands.Bot):
         with path_json.open() as file:
             json_data = json.loads(file.read())
             msg_ID = json_data["message_ID"]
-            debug = json_data["debug"]
+            await self.set_debug_level(json_data["debuglevel"])
             mode = json_data["mode"]
             try:
                 self.msg = await channel.fetch_message(msg_ID)
@@ -106,72 +122,72 @@ class Elwood(commands.Bot):
                 if "Maintenance" in info_server_event.server_name: serverInMaintenance = True
             except TimeoutError: # Let TBN() handle the error
                 pass
-            except:
-                print(f"[{await self.current_time()}] Unable to get server info to check if it is in maintenance mode")
+            except Exception as e:
+                logger.exception(f"(MODE 1) Unable to get server info to check if it is in maintenance mode", e)
                 return
             
             if serverInMaintenance: # Is the server in Maintenance mode?
                 if self.msg == None:
-                    print(f"[{await self.current_time()}] Starting server info")
+                    logger.debug(f"(MODE mainte) Starting server info")
                     
                     try:
                         self.msg = await channel.send(content=await self.maintenance_mode_message(), suppress=True)
                     except discord.errors.HTTPException as e: # too many characters in the message
                         self.msg = await channel.send(content=await self.too_many_players())
-                        print(e)
+                        logger.exception("(MODE mainte) Too many characters in the message",e)
                     except Exception as e:
                         self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
-                        print(e)
+                        logger.exception("(MODE mainte) Unknown exception",e)
                     await self.update_json_message_ID()
                 
                 else: # display the players
-                    if debug: print(f"[{await self.current_time()}] Updated server information")
+                    logger.debug(f"(MODE mainte) Updated server information")
                     try:
                         await self.msg.edit(content=await self.maintenance_mode_message(), suppress=True)
                     except discord.errors.HTTPException as e: # too many characters in the message
                         self.msg = await self.msg.edit(content=await self.too_many_players())
-                        print(e)
+                        logger.exception("(MODE mainte) Too many characters in the message",e)
                     except Exception as e:
                         self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
-                        print(e)
+                        logger.exception("(MODE mainte) Unknown exception",e)
                 return
             
             message = await self.TBN() # Get the message with the server info
             if self.msg == None: # if message doesn't exist create a new one
-                print(f"[{await self.current_time()}] Starting server info")
+                logger.debug(f"(MODE 1) Starting server info")
                 try:
                     self.msg = await channel.send(content=message)
                 except discord.errors.HTTPException as e: # too many characters in the message
                     self.msg = await channel.send(content=await self.too_many_players())
-                    print(e)
+                    logger.exception("(MODE 1) Too many characters in the message",e)
                 except Exception as e:
                     self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
-                    print(e)
+                    logger.exception("(MODE 1) Unknown exception",e)
                 await self.update_json_message_ID()
                     
             else: # message exists
-                if debug: print(f"[{await self.current_time()}] Updated server information")
+                logger.debug(f"(MODE 1) Starting server info")
                 try:
                     await self.msg.edit(content=message)
                 except discord.errors.HTTPException as e: # too many characters in the message
                     self.msg = await self.msg.edit(content=await self.too_many_players())
-                    print(e)
+                    logger.exception("(MODE 1) Too many characters in the message",e)
                 except Exception as e:
                     self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
-                    print(e)
+                    logger.exception("(MODE 1) Unknown exception",e)
         
         elif mode == 0: # Sleep_mode
             self.new_time_holi = True
             if self.msg == None: # if message doesn't exist create a new one
-                print(f"[{await self.current_time()}] Starting server info")
+                logger.debug(f"(MODE 0) Starting server info")
                 try:
                     self.msg = await channel.send(content="...")
                 except discord.errors.HTTPException as e: # too many characters in the message
                     self.msg = await channel.send(content=await self.too_many_players())
-                    print(e)
+                    logger.exception("(MODE 0) Too many characters in the message",e)
                 except Exception as e:
                     self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
-                    print(e)
+                    logger.exception("(MODE 0) Unknown exception",e)
                 await self.update_json_message_ID()
             
             try:
@@ -181,20 +197,20 @@ class Elwood(commands.Bot):
                     
             except Exception as e:
                 self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
-                print(e)
+                logger.exception("(MODE 0) Unknown exception",e)
         
         elif mode == 2: # Holiday_mode
             self.new_time_sleep = True
             if self.msg == None: # if message doesn't exist create a new one
-                print(f"[{await self.current_time()}] Starting server info")
+                logger.debug(f"(MODE 2) Starting server info")
                 try:
                     self.msg = await channel.send(content="...")
                 except discord.errors.HTTPException as e: # too many characters in the message
                     self.msg = await channel.send(content=await self.too_many_players())
-                    print(e)
+                    logger.exception("(MODE 2) Too many characters in the message",e)
                 except Exception as e:
                     self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
-                    print(e)
+                    logger.exception("(MODE 2) Unknown exception",e)
                 await self.update_json_message_ID()
             try:
                 if self.new_time_holi: self.sleep_unix_time = time.time()
@@ -203,13 +219,13 @@ class Elwood(commands.Bot):
                     
             except Exception as e:
                 self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
-                print(e)
+                logger.exception("(MODE 2) Unknown exception",e)
             
     
     @background.before_loop
     async def before_background(self) -> None:
         await self.wait_until_ready()
-        print(f"[{await self.current_time()}] Server info ready")
+        logger.info(f"Server info ready")
 
     async def check_permission(self, user_perms, needed_perm_id) -> bool: # Check if the user has a specific role
         for i in range(len(user_perms)):
@@ -269,8 +285,8 @@ class Elwood(commands.Bot):
             message += "**Last update:** \n"
             message += f"<t:{int(time.time())}:R>"
             return message
-        except Exception as e: # An error has occurred. Print it and put it in the message
-            print(f"-----------------------------------\n[{await self.current_time()}] ERROR:\n{e}\n-----------------------------------\n")
+        except Exception as e: # An error has occurred. Log it
+            logger.exception(f"Exception in TBN()", e)
             message = f"**An error occurred**\n\n{e}\nFIX THIS <@397046303378505729>"
             return message
         
@@ -310,6 +326,21 @@ class Elwood(commands.Bot):
                             body=players
                                 )
         return output
+    
+    async def set_debug_level(self, debuglevel):
+        if debuglevel == "DEBUG":
+            logger.setLevel(logging.DEBUG)
+        elif debuglevel == "INFO":
+            logger.setLevel(logging.INFO)
+        elif debuglevel == "WARNING":
+            logger.setLevel(logging.WARNING)
+        elif debuglevel == "ERROR":
+            logger.setLevel(logging.ERROR)
+        elif debuglevel == "CRITICAL":
+            logger.setLevel(logging.CRITICAL)
+        else:
+            print("no debug level set")
+            logger.setLevel(logging.NOTSET)
 
     async def too_many_players(self) -> str:
         main_address = ("46.4.12.78", 27015)
