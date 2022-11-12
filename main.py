@@ -76,7 +76,7 @@ class Elwood(commands.Bot):
         await self.load_extension("cogs.guus")
         await self.load_extension("cogs.invite")
         await self.load_extension("cogs.json")
-        await self.load_extension("cogs.debug")
+        await self.load_extension("cogs.debuglevel")
         await self.load_extension("cogs.stardate")
         await self.load_extension("cogs.sleep_mode")
         await self.load_extension("cogs.talk")

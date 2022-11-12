@@ -35,7 +35,7 @@ class content(commands.Cog):
         description = "Gives a link to the Steam Workshop collection that the TBN server uses")
 
     async def content(self, interaction : discord.Interaction) -> None:
-        
+        await set_debug_level()
         mesg = """The Content for the server is NOT REQUIRED.
 It is FASTER, to join the server without it.
 Only Subscribe to the server if your problems persist after a restart of the game and joining the server again.
