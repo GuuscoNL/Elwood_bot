@@ -2,7 +2,6 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
-import datetime
 import os
 import json
 import logging
@@ -71,10 +70,6 @@ class holiday_mode(commands.Cog):
          file.truncate(0)
          file.write(temp)
       return json_data["mode"]
-   
-   async def current_time(self): # Get current time
-      now = datetime.datetime.utcnow()
-      return now.strftime("%d/%m/%Y %H:%M:%S UTC")
 
 async def setup(bot : commands.Bot) -> None:
    await bot.add_cog(
