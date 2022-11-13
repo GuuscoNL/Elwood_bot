@@ -3,6 +3,24 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 import os
+import logging
+import json
+
+from pathlib import Path
+path_dir = Path(__file__).parent.parent.resolve()
+path_json = path_dir / "data.JSON"
+
+#logging
+logger = logging.getLogger("help")
+
+formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
+                              "%Y-%m-%d %H:%M:%S")
+
+file_handler = logging.FileHandler("main.log")
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+logger.setLevel(logging.INFO)
 
 load_dotenv() # load all the variables from the env file
 SERVER_ID =os.getenv('SERVER_ID')
@@ -19,15 +37,17 @@ class help(commands.Cog):
     
    @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @help.error
    async def help(self, interaction : discord.Interaction) -> None:
-
+      await set_debug_level()
       em = discord.Embed(title="Elwood commands:")
       em = await self.help_admin(em)
       em = await self.help_public(em)
       await interaction.response.send_message(embed=em, ephemeral=True)
+      logger.info(f"{interaction.user.name} used the `/help` command")
       
    @help.error
    async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:  
       if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
+         await set_debug_level()
          if interaction.user.id == 397046303378505729: # Check if the author is me (GuuscoNL)
             em = discord.Embed(title="Elwood commands:")
             em = await self.help_admin(em)
@@ -35,6 +55,7 @@ class help(commands.Cog):
          else:
             em = discord.Embed(title="Elwood commands:")
             await interaction.response.send_message(embed= await self.help_public(em), ephemeral=True)
+         logger.info(f"{interaction.user.name} used the `/help` command")
    
    async def help_public(self, em : discord.Embed):
       public_help = '''`/help`
@@ -91,3 +112,22 @@ async def setup(bot : commands.Bot) -> None:
       help(bot),
       guilds = [discord.Object(id = SERVER_ID)]
    )
+   
+async def set_debug_level():
+    with path_json.open() as file:
+        json_data = json.loads(file.read())
+        debuglevel = json_data["debuglevel"]
+    
+    if debuglevel == "DEBUG":
+        logger.setLevel(logging.DEBUG)
+    elif debuglevel == "INFO":
+        logger.setLevel(logging.INFO)
+    elif debuglevel == "WARNING":
+        logger.setLevel(logging.WARNING)
+    elif debuglevel == "ERROR":
+        logger.setLevel(logging.ERROR)
+    elif debuglevel == "CRITICAL":
+        logger.setLevel(logging.CRITICAL)
+    else:
+        print("no debug level set")
+        logger.setLevel(logging.NOTSET)
