@@ -37,6 +37,10 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.setLevel(logging.INFO)
 
+#Discord.py logging
+
+discord_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+
 
 # MODES:
 #   0 = sleep_mode
@@ -379,6 +383,6 @@ class Elwood(commands.Bot):
         return message
         
 bot = Elwood()
-bot.run(TOKEN) # run the bot with the token
+bot.run(TOKEN, log_handler=discord_handler, log_level=logging.INFO) # run the bot with the token
 
 
