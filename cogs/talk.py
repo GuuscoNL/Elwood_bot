@@ -18,7 +18,7 @@ path_json = path_dir / "data.JSON"
 #logging
 logger = logging.getLogger("talk")
 
-formatter = logging.Formatter("[%(asctime)s] %(levelname)s:%(name)s: %(message)s",
+formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
                               "%Y-%m-%d %H:%M:%S")
 
 file_handler = logging.FileHandler("main.log")
