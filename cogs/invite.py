@@ -35,6 +35,7 @@ class invite(commands.Cog):
       description = "Sends an invite link that you can share with people")
    
    async def invite(self, interaction : discord.Interaction) -> None:
+      await set_debug_level()
       await interaction.response.send_message(f"Send this link to people you would like to invite to this server: https://discord.com/invite/5zTdXs4yJu", ephemeral=True)
       logger.info(f"{interaction.user.name} used the `/invite` command")
 
