@@ -76,7 +76,7 @@ class stardate(commands.Cog):
       ))
       stardate = format(stardate, ".2f")
       await set_debug_level()
-      await interaction.response.send_message(f"Current stardate is {stardate}\nTo calculate a custom stardate use this website: https://shorturl.at/BGRUZ", ephemeral=True, suppress_embeds=True)
+      await interaction.response.send_message(f"Current stardate is {stardate}\nTo calculate a custom stardate use this website: https://guusconl.github.io/TBN.github.io/", ephemeral=True, suppress_embeds=True)
       logger.info(f"{interaction.user.name} used the `/stardate` command")
 
 
