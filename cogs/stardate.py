@@ -66,7 +66,7 @@ class stardate(commands.Cog):
          n = 366
       else:
          n = 365
-      monthOffset = MONTHTABLE[dateTable.month]
+      monthOffset = MONTHTABLE[dateTable.month - 1]
       stardate = STARDATE_START_YEAR + (1000 * (y - STARDATE_STANDARD_YEAR)) + ((1000 / n) * (
          monthOffset
          + (dateTable.day - 1)
