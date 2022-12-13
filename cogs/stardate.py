@@ -74,7 +74,7 @@ class stardate(commands.Cog):
          + (dateTable.minute / (24 * 60)
          + (dateTable.second / (24 * 3600)))
       ))
-      stardate = format(stardate, ".2f")
+      stardate = format(stardate, ".3f")
       await set_debug_level()
       await interaction.response.send_message(f"Current stardate is {stardate}\nTo calculate a custom stardate use this website: https://guusconl.github.io/TBN.github.io/", ephemeral=True, suppress_embeds=True)
       logger.info(f"{interaction.user.name} used the `/stardate` command")

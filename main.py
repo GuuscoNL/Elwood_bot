@@ -82,6 +82,7 @@ class Elwood(commands.Bot):
         await self.load_extension("cogs.json")
         await self.load_extension("cogs.debuglevel")
         await self.load_extension("cogs.stardate")
+        await self.load_extension("cogs.earthdate")
         await self.load_extension("cogs.sleep_mode")
         await self.load_extension("cogs.talk")
         await bot.tree.sync(guild = discord.Object(id = SERVER_ID))
@@ -89,6 +90,7 @@ class Elwood(commands.Bot):
     
     async def on_ready(self):
         logger.info(f"{self.user} has connected to Discord!")
+        print(f"{self.user} has connected to Discord!")
         
     # async def on_message(self, message):
     #     # ------ Check that the message is not from the bot itself ------ 
@@ -369,7 +371,7 @@ class Elwood(commands.Bot):
         message += f"<t:{int(unix_time)}:R>"
         return message
     
-    async def holiday_mode_message(self, unix_time) -> str:
+    async def holiday_mode_message(self) -> str:
         message = "**Connect to server:** Server is on a hiatus\n\n"
         message += "I am going back to Chicago to visit my brother Jake. \nIt's only 106 miles to Chicago, I got a full tank of gas, half a pack of cigarettes, it's dark... and I am wearing sunglasses.\n**HIT IT!**"
         message += "\nTo calculate the stardate you can use this link: https://shorturl.at/BGRUZ"

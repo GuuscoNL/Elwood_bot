@@ -75,6 +75,9 @@ class help(commands.Cog):
       
       `/stardate`
       Get the current date converted to a stardate (year 2382)
+      
+      `/earthdate`
+      Convert a stardate to a normal date
       '''
       em.add_field(name="Public commands:", value=public_help)
       return em

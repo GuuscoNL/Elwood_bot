@@ -38,8 +38,6 @@ class talk(commands.Cog):
     @app_commands.describe(
         text = "text"
     )
-
-    # ---------------- I knew you would look Poe! ---------------- 
     
     #@app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @talk.error
     async def talk(self, interaction : discord.Interaction, text : str) -> None:
