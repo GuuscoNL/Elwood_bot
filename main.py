@@ -374,7 +374,7 @@ class Elwood(commands.Bot):
     async def holiday_mode_message(self) -> str:
         message = "**Connect to server:** Server is on a hiatus\n\n"
         message += "I am going back to Chicago to visit my brother Jake. \nIt's only 106 miles to Chicago, I got a full tank of gas, half a pack of cigarettes, it's dark... and I am wearing sunglasses.\n**HIT IT!**"
-        message += "\nTo calculate the stardate you can use this link: https://shorturl.at/BGRUZ"
+        message += "\nTo calculate the stardate you can use this link: https://guusconl.github.io/TBN.github.io/"
         message += "\n\n**Back from holiday:** \n"
         message += f"<t:1667779200:R>"
         return message
