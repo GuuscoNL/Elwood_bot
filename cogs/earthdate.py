@@ -51,6 +51,7 @@ class earthdate(commands.Cog):
          await interaction.response.send_message(f"Please put a stardate as input, like: `59947.891`", ephemeral=True, suppress_embeds=True)
          logger.info(f"{interaction.user.name} Tried to use the `/earthdate` command")
 
+# Algorithm taken from https://www.hillschmidt.de/gbr/sternenzeit.htm
 async def stardate_to_date(stardate) -> datetime:
    StarTime = stardate
    
