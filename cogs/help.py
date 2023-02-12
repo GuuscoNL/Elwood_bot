@@ -98,8 +98,8 @@ class help(commands.Cog):
       `/holiday_mode`
       Toggles the mode to holiday_mode or back to normal mode
       
-      `/debug`
-      Toggles debug variable
+      `/loglevel`
+      Set the loglevel variable
       
       `/sleep_mode`
       Toggles the mode to sleep_mode or back to normal mode
@@ -119,7 +119,7 @@ async def setup(bot : commands.Bot) -> None:
 async def set_debug_level():
     with path_json.open() as file:
         json_data = json.loads(file.read())
-        debuglevel = json_data["debuglevel"]
+        debuglevel = json_data["loglevel"]
     
     if debuglevel == "DEBUG":
         logger.setLevel(logging.DEBUG)

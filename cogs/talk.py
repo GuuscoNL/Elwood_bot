@@ -67,7 +67,7 @@ async def setup(bot : commands.Bot) -> None:
 async def set_debug_level():
     with path_json.open() as file:
         json_data = json.loads(file.read())
-        debuglevel = json_data["debuglevel"]
+        debuglevel = json_data["loglevel"]
     
     if debuglevel == "DEBUG":
         logger.setLevel(logging.DEBUG)

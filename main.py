@@ -80,7 +80,7 @@ class Elwood(commands.Bot):
         await self.load_extension("cogs.guus")
         await self.load_extension("cogs.invite")
         await self.load_extension("cogs.json")
-        await self.load_extension("cogs.debuglevel")
+        await self.load_extension("cogs.loglevel")
         await self.load_extension("cogs.stardate")
         await self.load_extension("cogs.earthdate")
         await self.load_extension("cogs.sleep_mode")
@@ -111,7 +111,7 @@ class Elwood(commands.Bot):
         with path_json.open() as file:
             json_data = json.loads(file.read())
             msg_ID = json_data["message_ID"]
-            await self.set_debug_level(json_data["debuglevel"])
+            await self.set_debug_level(json_data["loglevel"])
             mode = json_data["mode"]
             try:
                 self.msg = await channel.fetch_message(msg_ID)
