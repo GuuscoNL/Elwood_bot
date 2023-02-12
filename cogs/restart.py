@@ -53,8 +53,8 @@ class restart(commands.Cog):
                 logger.info(f"{interaction.user.name} restarted the bot")
                 quit(0)
             else:
-                await interaction.response.send_message("You do not have the permission!", ephemeral=True)
-                logger.info(f"{interaction.user.name} tried to use the `/restart` command")
+                await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
+                logger.warning(f"{interaction.user.name} tried to use `/restart`")
 
 async def setup(bot : commands.Bot) -> None:
     await bot.add_cog(

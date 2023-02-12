@@ -48,8 +48,8 @@ class talk(commands.Cog):
             await interaction.channel.send(content=text)
             logger.info(f"{interaction.user.name} used the talk command and said: '{text}'")
         else:
-            await interaction.response.send_message("You do not have the permission!", ephemeral=True)
-            logger.info(f"{interaction.user.name} tried to use the `/talk` command")
+            await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
+            logger.warning(f"{interaction.user.name} tried to use `/talk`")
   
     async def check_permission(self, user_perms, needed_perm_id) -> bool: # Check if the user has a specific role
         for i in range(len(user_perms)):

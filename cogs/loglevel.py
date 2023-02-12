@@ -60,8 +60,8 @@ class loglevel(commands.Cog):
             
          await interaction.response.send_message(msg, ephemeral=True)
       else:
-         await interaction.response.send_message("You do not have the permission!", ephemeral=True)
-         logger.info(f"{interaction.user.name} tried to use the `/loglevel` command")
+         await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
+         logger.warning(f"{interaction.user.name} tried to use `/loglevel`")
    
    async def update_json(self, loglevel : str):
       with path_json.open(mode="r+") as file:

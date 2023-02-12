@@ -55,8 +55,8 @@ class holiday_mode(commands.Cog):
             await interaction.response.send_message(msg, ephemeral=True)
             logger.info(f"{interaction.user.name} changed mode to {mode}")
          else:
-            await interaction.response.send_message("You do not have the permission!", ephemeral=True)
-            logger.info(f"{interaction.user.name} tried to use the `/holiday_mode` command") # Log it
+            await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
+            logger.warning(f"{interaction.user.name} tried to use `/holiday_mode`") # Log it
    
    async def update_json(self):
       with path_json.open(mode="r+") as file:

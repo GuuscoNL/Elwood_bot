@@ -53,8 +53,8 @@ class command_json(commands.Cog):
                await interaction.response.send_message(f"```{json_data}```", ephemeral=True)
                logger.info(f"{interaction.user.name} used the `/json` command")
          else:
-               await interaction.response.send_message("You do not have the permission!", ephemeral=True)
-               logger.info(f"{interaction.user.name} tried to use the `/json` command")
+               await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
+               logger.warning(f"{interaction.user.name} tried to use `/json`")
 
 async def setup(bot : commands.Bot) -> None:
    await bot.add_cog(

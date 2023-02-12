@@ -49,8 +49,8 @@ class ping(commands.Cog):
                 await interaction.response.send_message(f"pong ({str(self.bot.latency*1000)[0:6]} ms)", ephemeral=True)
                 logger.info(f"{interaction.user.name} pinged the bot")
             else:
-                await interaction.response.send_message("You do not have the permission!", ephemeral=True)
-                logger.info(f"{interaction.user.name} tried to use the `/ping` command")
+                await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
+                logger.warning(f"{interaction.user.name} tried to use `/ping`")
 
 async def setup(bot : commands.Bot) -> None:
     await bot.add_cog(
