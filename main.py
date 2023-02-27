@@ -85,6 +85,7 @@ class Elwood(commands.Bot):
         await self.load_extension("cogs.earthdate")
         await self.load_extension("cogs.sleep_mode")
         await self.load_extension("cogs.talk")
+        await self.load_extension("cogs.rank")
         await bot.tree.sync(guild = discord.Object(id = SERVER_ID))
         self.background.start()
     
