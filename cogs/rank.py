@@ -2,7 +2,6 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord import ui
-from discord.utils import get
 from dotenv import load_dotenv
 import os
 import json
@@ -87,9 +86,11 @@ class rankView(ui.View):
         
         # Check what the permission role is
         self.permission_role = None
-        for role in self.user.roles:
+        promotion_perms_reversed = reversed(JSON_DATA["promotion_perms"])
+        for perm in promotion_perms_reversed:
+            
             if self.permission_role != None: break
-            for perm in reversed(JSON_DATA["promotion_perms"].keys()):
+            for role in self.user.roles:
                 if int(perm) == role.id:
                     self.permission_role = role
                     break
