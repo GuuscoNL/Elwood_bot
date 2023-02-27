@@ -125,13 +125,13 @@ class rankView(ui.View):
                 role = self.original_interaction.guild.get_role(role_id)
                 
                 if not role in self.user_selected.roles: # Does the user not have the rank?
-                    self.selectRole.options.append(discord.SelectOption(label=role.name, value=role_id, emoji=role.icon.url))
+                    self.selectRole.options.append(discord.SelectOption(label=role.name, value=role_id, emoji=role.display_icon.key))
                 
         elif self.mode == 1: # remove rank
             self.selectRole.options.clear()
             for user_role in self.user_selected.roles:
                 if user_role.id in allowed_ranks_to_change_ids: # Does the user have the rank?
-                    self.selectRole.options.append(discord.SelectOption(label=user_role.name, value=user_role.id, emoji=user_role.icon.url))
+                    self.selectRole.options.append(discord.SelectOption(label=user_role.name, value=user_role.id, emoji=user_role.display_icon.key))
             
             if self.selectRole.options == []: # No ranks to remove?
                 # Needed to prevent crash
