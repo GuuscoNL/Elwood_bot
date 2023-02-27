@@ -61,7 +61,13 @@ class rank(commands.Cog):
         if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
             await set_debug_level()
             if interaction.user.id == 397046303378505729:# Check if the author is me (GuuscoNL)
-                await interaction.response.send_message(f"OOPS :swe", ephemeral=True)
+                await set_debug_level()
+
+                view = rankView(interaction=interaction)
+                await view.update_selectRole()
+                await interaction.response.send_message(view=view, ephemeral=True)
+                view.message = await interaction.original_response()
+                await view.wait()
             else:
                 await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
                 logger.warning(f"{interaction.user.name} tried to use `/rank`")
