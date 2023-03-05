@@ -125,6 +125,9 @@ class help(commands.Cog):
       
       `/talk`
       Makes the bot talk in the current channel. Put the text you want the bot to say in the text parameter
+      
+      `/log`
+      Shows the bots logs
       '''
       em.add_field(name="Admin commands:", value=admin_help)
       return em
