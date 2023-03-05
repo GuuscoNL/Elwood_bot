@@ -9,7 +9,15 @@ import json
 
 from pathlib import Path
 path_dir = Path(__file__).parent.parent.resolve()
+path_rank_json = path_dir / "rank_data.JSON"
 path_json = path_dir / "data.JSON"
+
+JSON_DATA = None
+rank_permission_roles = []
+with path_rank_json.open() as file:
+    JSON_DATA = json.loads(file.read())
+    for role_id, _ in JSON_DATA["promotion_perms"].items():
+        rank_permission_roles.append(int(role_id))
 
 #logging
 logger = logging.getLogger("help")
@@ -43,6 +51,7 @@ class help(commands.Cog):
       em = discord.Embed(title="Elwood commands:")
       em = await self.help_admin(em)
       em = await self.help_public(em)
+      em = await self.help_special(em, interaction.user.roles)
       await interaction.response.send_message(embed=em, ephemeral=True)
       logger.info(f"{interaction.user.name} used the `/help` command")
       
@@ -61,34 +70,42 @@ class help(commands.Cog):
    
    async def help_public(self, em : discord.Embed):
       public_help = '''`/help`
-      Gives a list with all the commands and what they do
+      Gives a list of all the commands and what they do
       
       `/content`
       Gives a link to Steam Workshop collection with all the content packs you need for the TBN server
       
       `/roll`
-      Rolls between 0 and 100
+      Roll between 0 and 100
       
       `/invite`
-      Sends an invite link that you can share with people
+      Get an invite link that you can share with people
       
       `/guus`
       Gives an explanation and a video on how to pronounce Guus correctly
       
       `/stardate`
-      Get the current date converted to a stardate (year 2382)
+      Get the current date converted to a stardate
       
       `/earthdate`
-      Convert a stardate to a normal date
+      Convert a stardate to a normal date with a 24 hour accuracy
       '''
       em.add_field(name="Public commands:", value=public_help)
       return em
    
-   async def help_admin(self, em : discord.Embed):
-      admin_help = '''`/help`
-      If the user has the admin role it will show the admin commands
+   async def help_special(self, em : discord.Embed, roles: list[discord.Role]):
+      public_help = ""
       
-      `/ping`
+      if await self.check_permission_any(roles, rank_permission_roles):
+         public_help += "`/rank`\nPromote or demote users. Perms are based on role\n\n"
+      
+      if public_help != "":
+         em.add_field(name="Special commands:", value=public_help)
+         
+      return em
+   
+   async def help_admin(self, em : discord.Embed):
+      admin_help = '''`/ping`
       Pings the bot
       
       `/restart`
@@ -101,7 +118,7 @@ class help(commands.Cog):
       Toggles the mode to holiday_mode or back to normal mode
       
       `/loglevel`
-      Set the loglevel variable
+      Set the loglevel
       
       `/sleep_mode`
       Toggles the mode to sleep_mode or back to normal mode
@@ -111,6 +128,12 @@ class help(commands.Cog):
       '''
       em.add_field(name="Admin commands:", value=admin_help)
       return em
+   
+   async def check_permission_any(self, user_perms: list[discord.Role], needed_perms: list[int]) -> bool: # Check if the user has a specific role
+        for i in range(len(user_perms)):
+            if user_perms[i].id in needed_perms:
+                return True
+        return False
 
 async def setup(bot : commands.Bot) -> None:
    await bot.add_cog(
