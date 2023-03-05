@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 import os
+import time
 import json
 import logging
 
@@ -18,7 +19,8 @@ path_json = path_dir / "data.JSON"
 logger = logging.getLogger("ping")
 
 formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
-                              "%Y-%m-%d %H:%M:%S")
+                              "%d-%m-%Y %H:%M:%S")
+formatter.converter = time.gmtime
 
 file_handler = logging.FileHandler("main.log")
 file_handler.setFormatter(formatter)

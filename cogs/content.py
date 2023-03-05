@@ -4,6 +4,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import logging
 import os
+import time
 import json
 
 load_dotenv() # load all the variables from the env file
@@ -17,7 +18,8 @@ path_json = path_dir / "data.JSON"
 logger = logging.getLogger("content")
 
 formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
-                              "%Y-%m-%d %H:%M:%S")
+                              "%d-%m-%Y %H:%M:%S")
+formatter.converter = time.gmtime
 
 file_handler = logging.FileHandler("main.log")
 file_handler.setFormatter(formatter)

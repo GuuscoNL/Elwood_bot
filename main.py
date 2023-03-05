@@ -29,7 +29,8 @@ path_json = path_dir / "data.JSON"
 logger = logging.getLogger("main")
 
 formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
-                              "%Y-%m-%d %H:%M:%S")
+                              "%d-%m-%Y %H:%M:%S")
+formatter.converter = time.gmtime
 
 file_handler = logging.FileHandler("main.log")
 file_handler.setFormatter(formatter)
