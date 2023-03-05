@@ -17,7 +17,7 @@ TOKEN =os.getenv('TOKEN')
 SERVER_ID = int(os.getenv('SERVER_ID'))
 CHANNEL_ID_SERVER_INFO = int(os.getenv('CHANNEL_ID_SERVER_INFO'))
 ADMIN_ROLE_ID = int(os.getenv('ADMIN_ROLE_ID'))
-UPDATE_DELAY = 60*5 # seconds
+UPDATE_DELAY = 30#60*5 # seconds
 
 
 # ------ Initialise some stuff ------ 
@@ -38,8 +38,7 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.setLevel(logging.INFO)
 
-#Discord.py logging
-
+# Discord.py logging
 discord_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
 
@@ -47,16 +46,6 @@ discord_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', 
 #   0 = sleep_mode
 #   1 = Normal
 #   2 = Holiday
-
-# with path_json.open(mode="r+") as file:
-#     json_data = {}
-#     json_data["message_ID"] = 987496250091913236
-#     json_data["mode"] = 2
-#     json_data["debug"] = False
-#     file.seek(0)
-#     temp = json.dumps(json_data, indent=3)
-#     file.truncate(0)
-#     file.write(temp)
 
 class Elwood(commands.Bot):
 
@@ -91,24 +80,26 @@ class Elwood(commands.Bot):
         self.background.start()
     
     async def on_ready(self):
+        with path_json.open() as file:
+            data = json.loads(file.read())
+            last_online_time = datetime.datetime.fromtimestamp(data["last_online"])
+
+        time_difference = datetime.datetime.now() - last_online_time
+        str_time_difference = str(time_difference).split(".")[0]
+        logger.critical("")
+        logger.critical(f"Last online: {last_online_time.strftime('%d-%m-%Y %H:%M:%S')}")
+        logger.critical(f"Total time offline: {str_time_difference}")
+
         logger.info(f"{self.user} has connected to Discord!")
         print(f"{self.user} has connected to Discord!")
-        
-    # async def on_message(self, message):
-    #     # ------ Check that the message is not from the bot itself ------ 
-    #     if message.author.id == self.user.id:
-    #         return
-        
-    #     # ------ Does the author have the ADMIN role? ------ 
-    #     if message.author.id == 397046303378505729: # Check if the author is me (GuuscoNL)
-    #         is_admin = True
-    #     else:
-    #         is_admin = await self.check_permission(message.author.roles, ADMIN_ROLE_ID) # Check if the author has the admin role
+
 
     @tasks.loop(seconds=UPDATE_DELAY)
     async def background(self) -> None:
         channel = self.get_channel(CHANNEL_ID_SERVER_INFO) # Get the channel where the server info will be posted
-        
+
+        await self.update_json_last_online()
+
         # ----- Open json file and read it -----
         with path_json.open() as file:
             json_data = json.loads(file.read())
@@ -142,22 +133,22 @@ class Elwood(commands.Bot):
                         self.msg = await channel.send(content=await self.maintenance_mode_message(), suppress=True)
                     except discord.errors.HTTPException as e: # too many characters in the message
                         self.msg = await channel.send(content=await self.too_many_players())
-                        logger.exception("(MODE mainte) Too many characters in the message",e)
+                        logger.exception("(MODE maintenance) Too many characters in the message",e)
                     except Exception as e:
                         self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
-                        logger.exception("(MODE mainte) Unknown exception",e)
+                        logger.exception("(MODE maintenance) Unknown exception",e)
                     await self.update_json_message_ID()
                 
                 else: # display the players
-                    logger.debug(f"(MODE mainte) Updated server information")
+                    logger.debug(f"(MODE maintenance) Updated server information")
                     try:
                         await self.msg.edit(content=await self.maintenance_mode_message(), suppress=True)
                     except discord.errors.HTTPException as e: # too many characters in the message
                         self.msg = await self.msg.edit(content=await self.too_many_players())
-                        logger.exception("(MODE mainte) Too many characters in the message",e)
+                        logger.exception("(MODE maintenance) Too many characters in the message",e)
                     except Exception as e:
                         self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
-                        logger.exception("(MODE mainte) Unknown exception",e)
+                        logger.exception("(MODE maintenance) Unknown exception",e)
                 return
             
             message = await self.TBN() # Get the message with the server info
@@ -233,7 +224,7 @@ class Elwood(commands.Bot):
     @background.before_loop
     async def before_background(self) -> None:
         await self.wait_until_ready()
-        logger.info(f"Server info ready")
+        logger.debug(f"Server info ready")
 
     async def check_permission(self, user_perms, needed_perm_id) -> bool: # Check if the user has a specific role
         for i in range(len(user_perms)):
@@ -245,6 +236,15 @@ class Elwood(commands.Bot):
         with path_json.open(mode="r+") as file:
             json_data = json.loads(file.read())
             json_data["message_ID"] = self.msg.id
+            file.seek(0)
+            temp = json.dumps(json_data, indent=3)
+            file.truncate(0)
+            file.write(temp)
+    
+    async def update_json_last_online(self) -> None:
+        with path_json.open(mode="r+") as file:
+            json_data = json.loads(file.read())
+            json_data["last_online"] = time.time()
             file.seek(0)
             temp = json.dumps(json_data, indent=3)
             file.truncate(0)
