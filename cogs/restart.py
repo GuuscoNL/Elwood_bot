@@ -41,7 +41,7 @@ class restart(commands.Cog):
     async def restart(self, interaction : discord.Interaction) -> None:
         await set_debug_level()
         # Only restarts if in cloud, otherwise it just quits
-        await interaction.response.send_message("Restarting...")
+        await interaction.response.send_message("Restarting...", ephemeral=True)
         logger.info(f"{interaction.user.name} restarted the bot")
         quit(0)
     
@@ -51,7 +51,7 @@ class restart(commands.Cog):
         if isinstance(error, app_commands.MissingAnyRole):
             await set_debug_level()
             if interaction.user.id == 397046303378505729:
-                await interaction.response.send_message("Restarting...")
+                await interaction.response.send_message("Restarting...", ephemeral=True)
                 logger.info(f"{interaction.user.name} restarted the bot")
                 quit(0)
             else:
