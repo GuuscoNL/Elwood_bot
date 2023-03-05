@@ -41,7 +41,7 @@ class log(commands.Cog):
     async def log(self, interaction : discord.Interaction) -> None:
         await set_debug_level()
         await interaction.response.send_message("", file=discord.File("main.log"), ephemeral=True)
-        logger.info(f"{interaction.user.name} pinged the bot")
+        logger.info(f"{interaction.user.name} used the `/log` command")
         
     @log.error
     async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:
@@ -49,7 +49,7 @@ class log(commands.Cog):
             await set_debug_level()
             if interaction.user.id == 397046303378505729:# Check if the author is me (GuuscoNL)
                 await interaction.response.send_message("", file=discord.File("main.log"), ephemeral=True)
-                logger.info(f"{interaction.user.name} pinged the bot")
+                logger.info(f"{interaction.user.name} used the `/log` command")
             else:
                 await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
                 logger.warning(f"{interaction.user.name} tried to use `/log`")
