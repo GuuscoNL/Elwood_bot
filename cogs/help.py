@@ -131,10 +131,10 @@ class help(commands.Cog):
       '''
       em.add_field(name="Admin commands:", value=admin_help)
       return em
-   
+  
    async def check_permission_any(self, user_perms: list[discord.Role], needed_perms: list[int]) -> bool: # Check if the user has a specific role
-        for i in range(len(user_perms)):
-            if user_perms[i].id in needed_perms:
+        for role in user_perms:
+            if role.id in needed_perms:
                 return True
         return False
 
