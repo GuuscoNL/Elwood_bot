@@ -17,7 +17,7 @@ TOKEN =os.getenv('TOKEN')
 SERVER_ID = int(os.getenv('SERVER_ID'))
 CHANNEL_ID_SERVER_INFO = int(os.getenv('CHANNEL_ID_SERVER_INFO'))
 ADMIN_ROLE_ID = int(os.getenv('ADMIN_ROLE_ID'))
-UPDATE_DELAY = 60*2 # seconds
+UPDATE_DELAY = 60*5 # seconds
 
 
 # ------ Initialise some stuff ------ 
