@@ -55,6 +55,7 @@ class Elwood(commands.Bot):
             intents = discord.Intents.all(),
             application_id = 979113489387884554)
         self.msg = None
+        self.channel = None
         self.sleep_unix_time = None
         self.new_time_sleep = True
         self.new_time_holi = True
@@ -97,7 +98,8 @@ class Elwood(commands.Bot):
 
     @tasks.loop(seconds=UPDATE_DELAY)
     async def background(self) -> None:
-        channel = self.get_channel(CHANNEL_ID_SERVER_INFO) # Get the channel where the server info will be posted
+        if self.channel is None:
+            self.channel = self.get_channel(CHANNEL_ID_SERVER_INFO) # Get the channel where the server info will be posted
 
         await self.update_json_last_online()
 
@@ -108,7 +110,8 @@ class Elwood(commands.Bot):
             await self.set_debug_level(json_data["loglevel"])
             mode = json_data["mode"]
             try:
-                self.msg = await channel.fetch_message(msg_ID)
+                if self.msg is None:
+                    self.msg = await self.channel.fetch_message(msg_ID)
             except discord.NotFound:
                 self.msg = None
 
@@ -131,12 +134,12 @@ class Elwood(commands.Bot):
                     logger.debug(f"(MODE mainte) Starting server info")
                     
                     try:
-                        self.msg = await channel.send(content=await self.maintenance_mode_message(), suppress=True)
+                        self.msg = await self.channel.send(content=await self.maintenance_mode_message(), suppress=True)
                     except discord.errors.HTTPException as e: # too many characters in the message
-                        self.msg = await channel.send(content=await self.too_many_players())
+                        self.msg = await self.channel.send(content=await self.too_many_players())
                         logger.exception("(MODE maintenance) Too many characters in the message",e)
                     except Exception as e:
-                        self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
+                        self.msg = await self.channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
                         logger.exception("(MODE maintenance) Unknown exception",e)
                     await self.update_json_message_ID()
                 
@@ -156,12 +159,12 @@ class Elwood(commands.Bot):
             if self.msg == None: # if message doesn't exist create a new one
                 logger.debug(f"(MODE 1) Starting server info")
                 try:
-                    self.msg = await channel.send(content=message)
+                    self.msg = await self.channel.send(content=message)
                 except discord.errors.HTTPException as e: # too many characters in the message
-                    self.msg = await channel.send(content=await self.too_many_players())
+                    self.msg = await self.channel.send(content=await self.too_many_players())
                     logger.exception("(MODE 1) Too many characters in the message",e)
                 except Exception as e:
-                    self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
+                    self.msg = await self.channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
                     logger.exception("(MODE 1) Unknown exception",e)
                 await self.update_json_message_ID()
                     
@@ -181,12 +184,12 @@ class Elwood(commands.Bot):
             if self.msg == None: # if message doesn't exist create a new one
                 logger.debug(f"(MODE 0) Starting server info")
                 try:
-                    self.msg = await channel.send(content="...")
+                    self.msg = await self.channel.send(content="...")
                 except discord.errors.HTTPException as e: # too many characters in the message
-                    self.msg = await channel.send(content=await self.too_many_players())
+                    self.msg = await self.channel.send(content=await self.too_many_players())
                     logger.exception("(MODE 0) Too many characters in the message",e)
                 except Exception as e:
-                    self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
+                    self.msg = await self.channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
                     logger.exception("(MODE 0) Unknown exception",e)
                 await self.update_json_message_ID()
             
@@ -204,12 +207,12 @@ class Elwood(commands.Bot):
             if self.msg == None: # if message doesn't exist create a new one
                 logger.debug(f"(MODE 2) Starting server info")
                 try:
-                    self.msg = await channel.send(content="...")
+                    self.msg = await self.channel.send(content="...")
                 except discord.errors.HTTPException as e: # too many characters in the message
-                    self.msg = await channel.send(content=await self.too_many_players())
+                    self.msg = await self.channel.send(content=await self.too_many_players())
                     logger.exception("(MODE 2) Too many characters in the message",e)
                 except Exception as e:
-                    self.msg = await channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
+                    self.msg = await self.channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
                     logger.exception("(MODE 2) Unknown exception",e)
                 await self.update_json_message_ID()
             try:
