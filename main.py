@@ -180,7 +180,7 @@ class Elwood(commands.Bot):
                         logger.exception("(MODE 1) Too many characters in the message",e)
                     except Exception as e:
                         self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
-                        logger.exception("(MODE 1) Unknown exception",e)
+                        logger.exception("(MODE 1) Unknown exception",e) # FIXME: ERROR HERE something with dynamic IP? just restart the task
             
             elif mode == 0: # Sleep_mode
                 self.new_time_holi = True
@@ -230,7 +230,7 @@ class Elwood(commands.Bot):
         except discord.HTTPException as e:
             if e.status == 429:
                 # Extract the retry_after value from the exception
-                retry_after = e.retry_after
+                retry_after = 5*60
                 logger.warning(f"RATE LIMITED: Retrying in {retry_after} seconds")
                 
                 # Pause the background task for the specified retry_after duration
