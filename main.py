@@ -279,7 +279,7 @@ class Elwood(commands.Bot):
                 players_main = f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n"
             except TimeoutError:
                 players_main = ""
-                main_table = "`Timed out`\nProbably a map restart or the server is offline\n\nPing Guus if this is still happening after 10 minutes *while* the server is online.\n\n"
+                main_table = "`Timed out`\nProbably a map restart or the server is offline\n"
             except Exception as e:
                 players_main = f"{type(e)}\n"
                 main_table = ""
@@ -292,7 +292,7 @@ class Elwood(commands.Bot):
                 
             except TimeoutError:
                 players_event = ""
-                event_table = "`Timed out`\nProbably a map restart or the server is offline\n\nPing Guus if this is still happening after 10 minutes *while* the server is online.\n\n"
+                event_table = "`Timed out`\nProbably a map restart or the server is offline\n\n"
                 
             except Exception as e:
                 players_event = f"{type(e)}\n"
