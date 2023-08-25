@@ -61,17 +61,8 @@ class rank(commands.Cog):
     async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:
         if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
             await set_debug_level()
-            if interaction.user.id == 397046303378505729:# Check if the author is me (GuuscoNL)
-                await set_debug_level()
-
-                view = rankView(interaction=interaction)
-                await view.update_selectRole()
-                await interaction.response.send_message(view=view, ephemeral=True)
-                view.message = await interaction.original_response()
-                await view.wait()
-            else:
-                await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
-                logger.warning(f"{interaction.user.name} tried to use `/rank`")
+            await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
+            logger.warning(f"{interaction.user.name} tried to use `/rank`")
 
 class rankView(ui.View):
     def __init__(self, interaction: discord.Interaction):
