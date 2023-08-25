@@ -114,14 +114,8 @@ class help(commands.Cog):
      `/json`
       Shows what is in the data.JSON file
       
-      `/holiday_mode`
-      Toggles the mode to holiday_mode or back to normal mode
-      
       `/loglevel`
       Set the loglevel
-      
-      `/sleep_mode`
-      Toggles the mode to sleep_mode or back to normal mode
       
       `/talk`
       Makes the bot talk in the current channel. Put the text you want the bot to say in the text parameter

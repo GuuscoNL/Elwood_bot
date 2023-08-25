@@ -111,76 +111,23 @@ class Elwood(commands.Bot):
             serverInMaintenance = False
             try:
                 main_address = ("46.4.12.78", 27015) 
-                info_server_event = a2s.info(main_address)
+                info_server_event = a2s.info(main_address) #SPEED: Use this for all the other functions?
                 if "Maintenance" in info_server_event.server_name: serverInMaintenance = True
             except TimeoutError: # Let TBN() handle the error
                 pass
             except Exception as e:
-                logger.exception(f"(MODE 1) Unable to get server info to check if it is in maintenance mode", e)
+                logger.warning(f"Unable to get server info to check if it is in maintenance mode")
                 return
             
             if serverInMaintenance: # Is the server in Maintenance mode?
-                if self.msg == None:
-                    logger.debug(f"(MODE mainte) Starting server info")
-                    
-                    try:
-                        self.msg = await self.channel.send(content=await self.maintenance_mode_message(), suppress=True)
-                    except discord.errors.HTTPException as e: # too many characters in the message
-                        self.msg = await self.channel.send(content=await self.too_many_players())
-                        logger.exception("(MODE maintenance) Too many characters in the message",e)
-                    except Exception as e:
-                        self.msg = await self.channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
-                        logger.exception("(MODE maintenance) Unknown exception",e)
-                    await self.update_json_message_ID()
-                
-                else: # display the players
-                    logger.debug(f"(MODE maintenance) Updated server information")
-                    try:
-                        await self.msg.edit(content=await self.maintenance_mode_message(), suppress=True)
-                    except discord.errors.HTTPException as e: # too many characters in the message
-                        self.msg = await self.msg.edit(content=await self.too_many_players())
-                        logger.exception("(MODE maintenance) Too many characters in the message",e)
-                    except Exception as e:
-                        self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
-                        logger.exception("(MODE maintenance) Unknown exception",e)
-                return
+                await self.edit_message(self.maintenance_mode_message())
             
             message = await self.TBN() # Get the message with the server info
-            if self.msg == None: # if message doesn't exist create a new one
-                logger.debug(f"(MODE 1) Starting server info")
-                try:
-                    self.msg = await self.channel.send(content=message)
-                except discord.errors.HTTPException as e: # too many characters in the message
-                    self.msg = await self.channel.send(content=await self.too_many_players())
-                    logger.exception("(MODE 1) Too many characters in the message",e)
-                except Exception as e:
-                    self.msg = await self.channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
-                    logger.exception("(MODE 1) Unknown exception",e)
-                await self.update_json_message_ID()
-                    
-            else: # message exists
-                logger.debug(f"(MODE 1) Starting server info")
-                try:
-                    await self.msg.edit(content=message)
-                except discord.errors.HTTPException as e: # too many characters in the message
-                    self.msg = await self.msg.edit(content=await self.too_many_players())
-                    logger.exception("(MODE 1) Too many characters in the message",e)
-                except Exception as e:
-                    self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
-                    logger.exception("(MODE 1) Unknown exception",e)
+            await self.edit_message(message)
 
         except discord.HTTPException as e:
-            if e.status == 429:
-                # Extract the retry_after value from the exception
-                retry_after = 5*60
-                logger.warning(f"RATE LIMITED: Retrying in {retry_after} seconds")
-                
-                # Pause the background task for the specified retry_after duration
-                await asyncio.sleep(retry_after)
-                
-                # Resume the background task and retry the request
-                self.background.restart()
-            
+            await self.check_rate_limit(e)
+
     
     @background.before_loop
     async def before_background(self) -> None:
@@ -192,7 +139,7 @@ class Elwood(commands.Bot):
             if user_perms[i].id == needed_perm_id:
                 return True
         return False
-    
+
     async def update_json_message_ID(self) -> None:
         with path_json.open(mode="r+") as file:
             json_data = json.loads(file.read())
@@ -201,7 +148,7 @@ class Elwood(commands.Bot):
             temp = json.dumps(json_data, indent=3)
             file.truncate(0)
             file.write(temp)
-    
+
     async def update_json_last_online(self) -> None:
         with path_json.open(mode="r+") as file:
             json_data = json.loads(file.read())
@@ -210,7 +157,45 @@ class Elwood(commands.Bot):
             temp = json.dumps(json_data, indent=3)
             file.truncate(0)
             file.write(temp)
+
+    async def edit_message(self, message: str) -> None:
+        if self.msg == None: # if message doesn't exist create a new one
+            logger.debug(f"(MODE 1) Starting server info")
+            try:
+                self.msg = await self.channel.send(content=message)
+            except discord.errors.HTTPException as e: # too many characters in the message
+                await self.check_too_many_players(e)
+                await self.check_rate_limit(e)
+            except Exception as e:
+                self.msg = await self.channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
+                logger.exception("(MODE 1) Unknown exception",e)
+            await self.update_json_message_ID()
+
+        else: # message exists
+            logger.debug(f"(MODE 1) Starting server info")
+            try:
+                await self.msg.edit(content=message)
+            except discord.errors.HTTPException as e: # too many characters in the message
+                await self.check_too_many_players(e)
+                await self.check_rate_limit(e)
+            except Exception as e:
+                self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
+                logger.exception("(MODE 1) Unknown exception",e)
+
+    async def check_rate_limit(self, e: discord.errors.HTTPException) -> None:
+        if e.status == 429:
+            retry_after = e.response.headers['X-RateLimit-Reset-After']
+            logger.warning(f"RATE LIMITED: Retrying after {retry_after} seconds")
             
+            await asyncio.sleep(retry_after)
+            
+            self.background.restart()
+    
+    async def check_too_many_players(self, e: discord.errors.HTTPException) -> None:
+        if e.status == 400 and e.code == 50035: # too many characters
+                self.msg = await self.msg.edit(content=await self.too_many_players())
+                logger.warning("Too many characters in the message")
+
     async def TBN(self) -> str: # Get server info
         try:
             # ------ Get tables and get server infos ------ 
