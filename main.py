@@ -199,39 +199,14 @@ class Elwood(commands.Bot):
     async def TBN(self) -> str: # Get server info
         try:
             # ------ Get tables and get server infos ------ 
-            try:
-                main_address = ("46.4.12.78", 27015)
-                main_table = f"```{await self.Get_table(main_address)}```\n"
-                info_server_main = a2s.info(main_address)
-                players_main = f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n"
-            except TimeoutError:
-                players_main = ""
-                main_table = "`Timed out`\nProbably a map restart or the server is offline\n"
-            except Exception as e:
-                players_main = f"{type(e)}\n"
-                main_table = ""
-            
-            try:
-                event_address = ("46.4.12.78", 27016) 
-                event_table = f"```{await self.Get_table(event_address)}```\n"
-                info_server_event = a2s.info(event_address)
-                players_event = f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n"
-                
-            except TimeoutError:
-                players_event = ""
-                event_table = "`Timed out`\nProbably a map restart or the server is offline\n\n"
-                
-            except Exception as e:
-                players_event = f"{type(e)}\n"
-                event_table = ""
+            main_info = await self.get_server_info(("46.4.12.78", 27015))
+            event_info = await self.get_server_info(("46.4.12.78", 27016))
                 
             message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
             message += "**Main server:**\n"
-            message += players_main
-            message += main_table
+            message += main_info
             message += "**Event server:**\n"
-            message += players_event
-            message += event_table
+            message += event_info
             message += "**Last update:** \n"
             message += f"<t:{int(time.time())}:R>"
             return message
@@ -239,7 +214,21 @@ class Elwood(commands.Bot):
             logger.exception(f"Exception in TBN()", e)
             message = f"**An error occurred**\n\n{e}\nFIX THIS <@397046303378505729>"
             return message
+    
+    async def get_server_info(self, address: tuple[str, int]) -> str:
+        try:
+            player_table = f"```{await self.Get_table(address)}```\n"
+            info_server = a2s.info(address)
+            players_amount = f"Players online: {info_server.player_count}/{info_server.max_players}\n"
+        except TimeoutError:
+            players_amount = ""
+            player_table = "`Timed out`\nProbably a map restart or the server is offline\n"
+        except Exception as e:
+            players_amount = f"{type(e)}\n"
+            player_table = ""
         
+        return players_amount + player_table
+    
     async def Get_table(self, address) -> str:
         # ------ Get players online from server ------ 
         players_server = a2s.players(address)
