@@ -217,47 +217,38 @@ class Elwood(commands.Bot):
     
     async def get_server_info(self, address: tuple[str, int]) -> str:
         try:
-            player_table = f"```{await self.Get_table(address)}```\n"
+            player_table = f"```{await self.get_table(address)}```\n"
             info_server = a2s.info(address)
             players_amount = f"Players online: {info_server.player_count}/{info_server.max_players}\n"
         except TimeoutError:
             players_amount = ""
             player_table = "`Timed out`\nProbably a map restart or the server is offline\n"
         except Exception as e:
-            players_amount = f"{type(e)}\n"
+            players_amount = f"{e}\n"
             player_table = ""
         
         return players_amount + player_table
     
-    async def Get_table(self, address) -> str:
+    async def get_table(self, address: tuple[str, int]) -> str:
         # ------ Get players online from server ------ 
         players_server = a2s.players(address)
-        # ------ Make a list so that table2ascii can read it ------ 
-        """ #debug stuff. To test max players
-        players = []
-        for i in range(21):
-            players.append(["GuuscoNL_"+ str(i) + (6*"0"),"00:00:00"])
         
-        output = table2ascii(
-                            header=["Player", "Time Played"],
-                            body=players
-                                )
-        """
+        # ------ Make a list so that table2ascii can read it ------ 
         players = []
-        for i in range(len(players_server)):
-            time_played = str(datetime.timedelta(seconds=int(players_server[0+i].duration))) # Convert seconds to h:m:s
-            time_played = time_played[0:4] # only show hours and minutes
-            player_name = players_server[0+i].name
+        for player in players_server:
+            time_played = f"{int(player.duration) // 3600}:{(int(player.duration) % 3600) // 60}"
+            player_name = player.name
+            
             max_char = 17
             if len(player_name) > max_char:
                 player_name = player_name[0:max_char-3]+"..."
-            if player_name == "": # If player_name == "" than they are still connecting
+
+            if player_name == "": # If empty -> still connecting
                 if address[1] == 27016:
                     player_name = "Transporting..."
                 else:
                     player_name = "Connecting..."
-            temp = [player_name, time_played]
-            players.append(temp)
+            players.append((player_name, time_played))
         
         #  ------ Make the table ------ 
         output = table2ascii(
