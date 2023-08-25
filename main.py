@@ -53,7 +53,6 @@ class Elwood(commands.Bot):
             application_id = 979113489387884554)
         self.msg = None
         self.channel = None
-        self.sleep_unix_time = None
 
     async def setup_hook(self): 
         self.session = aiohttp.ClientSession()
@@ -299,5 +298,3 @@ class Elwood(commands.Bot):
         
 bot = Elwood()
 bot.run(TOKEN, log_handler=discord_handler, log_level=logging.INFO) # run the bot with the token
-
-
