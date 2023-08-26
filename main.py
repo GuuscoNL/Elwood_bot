@@ -11,7 +11,6 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from table2ascii import table2ascii
 
-# TODO: Rewrite everything, this code is ugly as hell :(
 
 # ------ Constants that must be changed in .env for every server the bot is in ------ 
 load_dotenv() # load all the variables from the env file
