@@ -10,6 +10,7 @@ import asyncio
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from table2ascii import table2ascii
+from aiohttp import ClientConnectorError
 
 
 # ------ Constants that must be changed in .env for every server the bot is in ------ 
@@ -113,6 +114,13 @@ class Elwood(commands.Bot):
                 if "Maintenance" in info_server_event.server_name: serverInMaintenance = True
             except TimeoutError: # Let TBN() handle the error
                 pass
+            
+            except ClientConnectorError:
+                logger.warning(f"ClientConnectorError: Retrying after {UPDATE_DELAY} seconds")
+                
+                await asyncio.sleep(UPDATE_DELAY)
+                self.background.restart()
+            
             except Exception as e:
                 logger.warning(f"Unable to get server info to check if it is in maintenance mode")
                 return
@@ -158,27 +166,41 @@ class Elwood(commands.Bot):
 
     async def edit_message(self, message: str) -> None:
         if self.msg == None: # if message doesn't exist create a new one
-            logger.debug(f"(MODE 1) Starting server info")
+            logger.debug(f"Starting server info")
             try:
                 self.msg = await self.channel.send(content=message)
-            except discord.errors.HTTPException as e: # too many characters in the message
+            except discord.errors.HTTPException as e: # too many characters in the message or rate limit
                 await self.check_too_many_players(e)
                 await self.check_rate_limit(e)
+                
+            except ClientConnectorError:
+                logger.warning(f"ClientConnectorError: Retrying after {UPDATE_DELAY} seconds")
+                
+                await asyncio.sleep(UPDATE_DELAY)
+                self.background.restart()
+                
             except Exception as e:
-                self.msg = await self.channel.send(content=f"ERROR: {e}\n<@397046303378505729>")
-                logger.exception("(MODE 1) Unknown exception",e)
+                self.msg = await self.channel.send(content=f"ERROR: {e}")
+                logger.exception("Unknown exception", e)
             await self.update_json_message_ID()
 
         else: # message exists
-            logger.debug(f"(MODE 1) Starting server info")
+            logger.debug(f"Starting server info")
             try:
                 await self.msg.edit(content=message)
-            except discord.errors.HTTPException as e: # too many characters in the message
+            except discord.errors.HTTPException as e: # too many characters in the message or rate limit
                 await self.check_too_many_players(e)
                 await self.check_rate_limit(e)
+            
+            except ClientConnectorError:
+                logger.warning(f"ClientConnectorError: Retrying after {UPDATE_DELAY} seconds")
+                
+                await asyncio.sleep(UPDATE_DELAY)
+                self.background.restart()
+
             except Exception as e:
-                self.msg = await self.msg.edit(content=f"ERROR: {e}\n<@397046303378505729>")
-                logger.exception("(MODE 1) Unknown exception",e)
+                self.msg = await self.msg.edit(content=f"ERROR: {e}")
+                logger.exception("Unknown exception", e)
 
     async def check_rate_limit(self, e: discord.errors.HTTPException) -> None:
         if e.status == 429:
