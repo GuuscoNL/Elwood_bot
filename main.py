@@ -41,7 +41,7 @@ logger.addHandler(file_handler)
 logger.setLevel(logging.INFO)
 
 # Discord.py logging
-discord_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+discord_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='a')
 
 
 class Elwood(commands.Bot):
@@ -204,9 +204,9 @@ class Elwood(commands.Bot):
 
     async def check_rate_limit(self, e: discord.errors.HTTPException) -> None:
         if e.status == 429:
-            retry_after = e.response.headers['X-RateLimit-Reset-After']
+            logger.warning(e.response)
+            retry_after = e.response.headers.get('X-RateLimit-Reset-After', 300)
             logger.warning(f"RATE LIMITED: Retrying after {retry_after} seconds")
-            
             await asyncio.sleep(retry_after)
             
             self.background.restart()
