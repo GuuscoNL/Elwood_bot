@@ -204,8 +204,8 @@ class Elwood(commands.Bot):
 
     async def check_rate_limit(self, e: discord.errors.HTTPException) -> None:
         if e.status == 429:
-            logger.warning(e.response)
-            retry_after = e.response.headers.get('X-RateLimit-Reset-After', 300)
+            # logger.warning(e.response.headers.get("Retry-After", "NONE"))
+            retry_after = e.response.headers.get("Retry-After", 300)
             logger.warning(f"RATE LIMITED: Retrying after {retry_after} seconds")
             await asyncio.sleep(retry_after)
             
@@ -213,8 +213,8 @@ class Elwood(commands.Bot):
     
     async def check_too_many_players(self, e: discord.errors.HTTPException) -> None:
         if e.status == 400 and e.code == 50035: # too many characters
-                self.msg = await self.msg.edit(content=await self.too_many_players())
-                logger.warning("Too many characters in the message")
+            self.msg = await self.msg.edit(content=await self.too_many_players())
+            logger.warning("Too many characters in the message")
 
     async def TBN(self) -> str: # Get server info
         try:
