@@ -128,8 +128,9 @@ class Elwood(commands.Bot):
             if serverInMaintenance: # Is the server in Maintenance mode?
                 await self.edit_message(self.maintenance_mode_message())
             
-            message = await self.TBN() # Get the message with the server info
+            message, total_player_count = await self.TBN() # Get the message with the server info
             await self.edit_message(message)
+            await self.channel.edit(name=f"🎮┃Active crew: {total_player_count}")
 
         except discord.HTTPException as e:
             await self.check_rate_limit(e)
@@ -216,11 +217,11 @@ class Elwood(commands.Bot):
             self.msg = await self.msg.edit(content=await self.too_many_players())
             logger.warning("Too many characters in the message")
 
-    async def TBN(self) -> str: # Get server info
+    async def TBN(self) -> tuple[str, int]: # Get server info
         try:
             # ------ Get tables and get server infos ------ 
-            main_info = await self.get_server_info(("46.4.12.78", 27015))
-            event_info = await self.get_server_info(("46.4.12.78", 27016))
+            main_info, player_count_main = await self.get_server_info(("46.4.12.78", 27015))
+            event_info, player_count_event = await self.get_server_info(("46.4.12.78", 27016))
                 
             message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
             message += "**Main server:**\n"
@@ -229,13 +230,13 @@ class Elwood(commands.Bot):
             message += event_info
             message += "**Last update:** \n"
             message += f"<t:{int(time.time())}:R>"
-            return message
+            return message, player_count_main + player_count_event
         except Exception as e: # An error has occurred. Log it
             logger.exception(f"Exception in TBN()", e)
             message = f"**An error occurred**\n\n{e}\nFIX THIS <@397046303378505729>"
-            return message
+            return message, 0
     
-    async def get_server_info(self, address: tuple[str, int]) -> str:
+    async def get_server_info(self, address: tuple[str, int]) -> tuple[str, int]:
         try:
             player_table = f"```{await self.get_table(address)}```\n"
             info_server = a2s.info(address)
@@ -247,7 +248,7 @@ class Elwood(commands.Bot):
             players_amount = f"{e}\n"
             player_table = ""
         
-        return players_amount + player_table
+        return players_amount + player_table, info_server.player_count
     
     async def get_table(self, address: tuple[str, int]) -> str:
         # ------ Get players online from server ------ 
