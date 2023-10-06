@@ -206,7 +206,7 @@ class Elwood(commands.Bot):
     async def check_rate_limit(self, e: discord.errors.HTTPException) -> None:
         if e.status == 429:
             # logger.warning(e.response.headers.get("Retry-After", "NONE"))
-            retry_after = e.response.headers.get("Retry-After", 300)
+            retry_after = int(e.response.headers.get("Retry-After", 300))
             logger.warning(f"RATE LIMITED: Retrying after {retry_after} seconds")
             await asyncio.sleep(retry_after)
             
