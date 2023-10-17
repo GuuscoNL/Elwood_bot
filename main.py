@@ -126,7 +126,8 @@ class Elwood(commands.Bot):
                 return
             
             if serverInMaintenance: # Is the server in Maintenance mode?
-                await self.edit_message(self.maintenance_mode_message())
+                await self.edit_message(await self.maintenance_mode_message())
+                return
             
             message, total_player_count = await self.TBN() # Get the message with the server info
             await self.edit_message(message)
