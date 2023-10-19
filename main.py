@@ -242,14 +242,15 @@ class Elwood(commands.Bot):
             player_table = f"```{await self.get_table(address)}```\n"
             info_server = a2s.info(address)
             players_amount = f"Players online: {info_server.player_count}/{info_server.max_players}\n"
+            return players_amount + player_table, info_server.player_count
         except TimeoutError:
             players_amount = ""
             player_table = "`Timed out`\nProbably a map restart or the server is offline\n"
+            return players_amount + player_table, 0
         except Exception as e:
             players_amount = f"{e}\n"
             player_table = ""
-        
-        return players_amount + player_table, info_server.player_count
+            return players_amount + player_table, 0
     
     async def get_table(self, address: tuple[str, int]) -> str:
         # ------ Get players online from server ------ 
