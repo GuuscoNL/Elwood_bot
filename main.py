@@ -317,7 +317,9 @@ class Elwood(commands.Bot):
     
     async def maintenance_mode_message(self) -> str:
         message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
-        message += "The server is currently in maintenance mode."
+        message += "The server is currently in maintenance mode.\n\n"
+        message += "**Last update:** \n"
+        message += f"<t:{int(time.time())}:R>"
         return message
         
 bot = Elwood()
