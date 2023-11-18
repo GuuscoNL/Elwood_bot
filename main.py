@@ -264,12 +264,15 @@ class Elwood(commands.Bot):
         # ------ Make a list so that table2ascii can read it ------ 
         players = []
         for player in players_server:
-            time_played = f"{int(player.duration) // 3600}:{(int(player.duration) % 3600) // 60}"
+            hours = int(player.duration) // 3600
+            minutes = (int(player.duration) % 3600) // 60
+
+            time_played = f"{hours: 2}:{minutes:02}"
             player_name = player.name
             
-            max_char = 17
-            if len(player_name) > max_char:
-                player_name = player_name[0:max_char-3]+"..."
+            max_chars = 17
+            if len(player_name) > max_chars:
+                player_name = player_name[0:max_chars-3]+"..."
 
             if player_name == "": # If empty -> still connecting
                 if address[1] == 27016:
