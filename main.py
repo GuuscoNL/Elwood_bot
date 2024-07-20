@@ -14,7 +14,7 @@ from aiohttp import ClientConnectorError
 
 
 # ------ Constants that must be changed in .env for every server the bot is in ------ 
-load_dotenv() # load all the variables from the env file
+load_dotenv(override=True) # load all the variables from the env file
 TOKEN =os.getenv('TOKEN')
 SERVER_ID = int(os.getenv('SERVER_ID'))
 CHANNEL_ID_SERVER_INFO = int(os.getenv('CHANNEL_ID_SERVER_INFO'))
