@@ -7,6 +7,7 @@ import time
 import json
 import logging
 import asyncio
+import socket
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from table2ascii import table2ascii
@@ -112,7 +113,7 @@ class Elwood(commands.Bot):
                 main_address = ("46.4.12.78", 27015) 
                 info_server_event = a2s.info(main_address) #SPEED: Use this for all the other functions?
                 if "Maintenance" in info_server_event.server_name: serverInMaintenance = True
-            except TimeoutError: # Let TBN() handle the error
+            except (TimeoutError, socket.timeout): # Let TBN() handle the error
                 pass
             
             except ClientConnectorError:
@@ -124,7 +125,7 @@ class Elwood(commands.Bot):
             except Exception as e:
                 logger.warning(f"Unable to get server info to check if it is in maintenance mode")
                 logger.exception("  Unknown exception", e)
-                return
+                pass # Let TBN() handle the error
             
             if serverInMaintenance: # Is the server in Maintenance mode?
                 await self.edit_message(await self.maintenance_mode_message())
