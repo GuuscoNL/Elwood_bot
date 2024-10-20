@@ -123,6 +123,7 @@ class Elwood(commands.Bot):
             
             except Exception as e:
                 logger.warning(f"Unable to get server info to check if it is in maintenance mode")
+                logger.exception("  Unknown exception", e)
                 return
             
             if serverInMaintenance: # Is the server in Maintenance mode?
