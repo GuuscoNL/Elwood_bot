@@ -14,7 +14,8 @@ from table2ascii import table2ascii
 from aiohttp import ClientConnectorError
 from a2s import SourceInfo
 from dataclasses import dataclass
-from pathlib import Path
+import pathlib as Path
+from logging import Logger
 
 
 # ------ Constants that must be changed in .env for every server the bot is in ------ 
@@ -25,27 +26,6 @@ CHANNEL_ID_SERVER_INFO = int(os.getenv('CHANNEL_ID_SERVER_INFO'))
 ADMIN_ROLE_ID = int(os.getenv('ADMIN_ROLE_ID'))
 UPDATE_DELAY = 60*5 # seconds
 
-
-# ------ Initialise some stuff ------ 
-path_dir = Path(__file__).parent.resolve()
-path_json = path_dir / "data.JSON"
-
-# logging
-logger = logging.getLogger("main")
-
-formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
-                              "%d-%m-%Y %H:%M:%S")
-formatter.converter = time.gmtime
-
-file_handler = logging.FileHandler("main.log")
-file_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
-logger.setLevel(logging.INFO)
-
-# Discord.py logging
-discord_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='a')
-
 @dataclass
 class ServerInfo:
     info: SourceInfo
@@ -53,11 +33,12 @@ class ServerInfo:
 
 class Elwood(commands.Bot):
 
-    def __init__(self):
+    def __init__(self, logger: Logger):
         super().__init__(
             command_prefix="!",
             intents = discord.Intents.all(),
             application_id = 979113489387884554)
+        self.logger = logger
         self.msg = None
         self.channel = None
         self.main_server_info:  ServerInfo = None
@@ -81,11 +62,11 @@ class Elwood(commands.Bot):
 
         time_difference = datetime.datetime.now() - last_online_time
         str_time_difference = str(time_difference).split(".")[0]
-        logger.critical("")
-        logger.critical(f"Last online: {last_online_time.strftime('%d-%m-%Y %H:%M:%S')}")
-        logger.critical(f"Total time offline: {str_time_difference}")
+        self.logger.critical("")
+        self.logger.critical(f"Last online: {last_online_time.strftime('%d-%m-%Y %H:%M:%S')}")
+        self.logger.critical(f"Total time offline: {str_time_difference}")
 
-        logger.info(f"{self.user} has connected to Discord!")
+        self.logger.info(f"{self.user} has connected to Discord!")
         print(f"{self.user} has connected to Discord!")
 
 
@@ -120,8 +101,8 @@ class Elwood(commands.Bot):
         except (TimeoutError, socket.timeout):
             return False
         except Exception as e:
-            logger.error("Unable to get server info")
-            logger.exception("  Unknown exception", e)
+            self.logger.error("Unable to get server info")
+            self.logger.exception("  Unknown exception", e)
         
         # Get the channel where the message is
         if self.channel is None:
@@ -149,18 +130,18 @@ class Elwood(commands.Bot):
         try:
             return ServerInfo(a2s.info(address), a2s.players(address))
         except TimeoutError:
-            logger.warning(f"Timed out while getting server info from {address}")
+            self.logger.warning(f"Timed out while getting server info from {address}")
             return None
         except Exception as e:
-            logger.error(f"Unable to get server info from {address}")
-            logger.exception("  Unknown exception", e)
+            self.logger.error(f"Unable to get server info from {address}")
+            self.logger.exception("  Unknown exception", e)
             return None
 
     
     @background.before_loop
     async def before_background(self) -> None:
         await self.wait_until_ready()
-        logger.debug("Server info ready")
+        self.logger.debug("Server info ready")
 
     async def update_json_message_ID(self) -> None:
         with path_json.open(mode="r+") as file:
@@ -182,7 +163,7 @@ class Elwood(commands.Bot):
 
     async def edit_message(self, message: str) -> None:
         if self.msg is None: # if message doesn't exist create a new one
-            logger.debug("Creating new server info message")
+            self.logger.debug("Creating new server info message")
             try:
                 self.msg = await self.channel.send(content=message)
             except discord.errors.HTTPException as e: # too many characters in the message or rate limit
@@ -190,17 +171,17 @@ class Elwood(commands.Bot):
                 await self.check_rate_limit(e)
                 
             except ClientConnectorError:
-                logger.warning(f"ClientConnectorError: Retrying after {UPDATE_DELAY} seconds")
+                self.logger.warning(f"ClientConnectorError: Retrying after {UPDATE_DELAY} seconds")
                 
                 await asyncio.sleep(UPDATE_DELAY)
                 self.background.restart()
                 
             except Exception as e:
-                logger.exception("Unknown exception when creating new server info message", e)
+                self.logger.exception("Unknown exception when creating new server info message", e)
             await self.update_json_message_ID()
 
         else: # message exists
-            logger.debug("Reusing server info message")
+            self.logger.debug("Reusing server info message")
             try:
                 await self.msg.edit(content=message)
             except discord.errors.HTTPException as e: # too many characters in the message or rate limit
@@ -208,13 +189,13 @@ class Elwood(commands.Bot):
                 await self.check_rate_limit(e)
             
             except ClientConnectorError:
-                logger.warning(f"ClientConnectorError: Retrying after {UPDATE_DELAY} seconds")
+                self.logger.warning(f"ClientConnectorError: Retrying after {UPDATE_DELAY} seconds")
                 
                 await asyncio.sleep(UPDATE_DELAY)
                 self.background.restart()
 
             except Exception as e:
-                logger.exception("Unknown exception when trying to reuse server info message", e)
+                self.logger.exception("Unknown exception when trying to reuse server info message", e)
 
     async def check_rate_limit(self, e: discord.errors.HTTPException) -> None:
         if e.status == 429:
@@ -225,7 +206,7 @@ class Elwood(commands.Bot):
             else:
                 retry_after = total_retry_time
 
-            logger.warning(f"RATE LIMITED: Retrying after {retry_after} seconds (Total retry time: {total_retry_time})")
+            self.logger.warning(f"RATE LIMITED: Retrying after {retry_after} seconds (Total retry time: {total_retry_time})")
             await asyncio.sleep(retry_after)
             
             self.background.restart()
@@ -233,7 +214,7 @@ class Elwood(commands.Bot):
     async def check_too_many_players(self, e: discord.errors.HTTPException) -> None:
         if e.status == 400 and e.code == 50035: # too many characters
             self.msg = await self.msg.edit(content=await self.too_many_players())
-            logger.warning("Too many characters in the message")
+            self.logger.warning("Too many characters in the message")
 
     async def get_servers_message(self) -> tuple[str, int]:
         # ------ Get tables and get server infos ------ 
@@ -297,18 +278,18 @@ class Elwood(commands.Bot):
     
     async def set_debug_level(self, debuglevel):
         if debuglevel == "DEBUG":
-            logger.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
         elif debuglevel == "INFO":
-            logger.setLevel(logging.INFO)
+            self.logger.setLevel(logging.INFO)
         elif debuglevel == "WARNING":
-            logger.setLevel(logging.WARNING)
+            self.logger.setLevel(logging.WARNING)
         elif debuglevel == "ERROR":
-            logger.setLevel(logging.ERROR)
+            self.logger.setLevel(logging.ERROR)
         elif debuglevel == "CRITICAL":
-            logger.setLevel(logging.CRITICAL)
+            self.logger.setLevel(logging.CRITICAL)
         else:
             print("no debug level set")
-            logger.setLevel(logging.NOTSET)
+            self.logger.setLevel(logging.NOTSET)
 
     async def too_many_players(self) -> str:
         players_main = f"Players online: {self.main_server_info.info.player_count}/{self.main_server_info.info.max_players}\n"
@@ -332,6 +313,26 @@ class Elwood(commands.Bot):
         message += "**Last update:** \n"
         message += f"<t:{int(time.time())}:R>"
         return message
-        
-bot = Elwood()
-bot.run(TOKEN, log_handler=discord_handler, log_level=logging.INFO) # run the bot with the token
+
+if __name__ == "__main__":
+    # ------ Logging ------ 
+    path_dir = Path.Path(__file__).parent.resolve()
+    path_json = path_dir / "data.JSON"
+
+    # logging
+    logger = logging.getLogger("main")
+
+    formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
+                                "%d-%m-%Y %H:%M:%S")
+    formatter.converter = time.gmtime
+
+    file_handler = logging.FileHandler("main.log")
+    file_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+    logger.setLevel(logging.INFO)
+    
+
+    # ------ Run the bot ------
+    bot = Elwood(logger)
+    bot.run(TOKEN, log_handler=logging.FileHandler(filename='discord.log', encoding='utf-8', mode='a'), log_level=logging.INFO) # run the bot with the token
