@@ -12,6 +12,7 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from table2ascii import table2ascii
 from aiohttp import ClientConnectorError
+import pathlib
 
 
 # ------ Constants that must be changed in .env for every server the bot is in ------ 
@@ -54,23 +55,17 @@ class Elwood(commands.Bot):
             application_id = 979113489387884554)
         self.msg = None
         self.channel = None
+        self.main_server_info = None
 
     async def setup_hook(self): 
         self.session = aiohttp.ClientSession()
-        await self.load_extension("cogs.restart")
-        await self.load_extension("cogs.ping")
-        await self.load_extension("cogs.content")
-        await self.load_extension("cogs.help")
-        await self.load_extension("cogs.roll")
-        await self.load_extension("cogs.guus")
-        await self.load_extension("cogs.invite")
-        await self.load_extension("cogs.json")
-        await self.load_extension("cogs.loglevel")
-        await self.load_extension("cogs.stardate")
-        await self.load_extension("cogs.earthdate")
-        await self.load_extension("cogs.talk")
-        await self.load_extension("cogs.rank")
-        await self.load_extension("cogs.log")
+        
+        # use apthlib
+        cog_files = [file.stem for file in pathlib.Path("cogs").rglob("*.py")]
+        
+        for cog in cog_files:
+            await self.load_extension(f"cogs.{cog}")
+
         await bot.tree.sync(guild = discord.Object(id = SERVER_ID))
         self.background.start()
     
@@ -91,53 +86,63 @@ class Elwood(commands.Bot):
 
     @tasks.loop(seconds=UPDATE_DELAY)
     async def background(self) -> None:
+        
+        if not await self.prepare_background_task():
+            # Unable to get server info
+            return
+        
+
         try:
-            if self.channel is None:
-                self.channel = self.get_channel(CHANNEL_ID_SERVER_INFO) # Get the channel where the server info will be posted
-
-            await self.update_json_last_online()
-
-            # ----- Open json file and read it -----
-            with path_json.open() as file:
-                json_data = json.loads(file.read())
-                msg_ID = json_data["message_ID"]
-                await self.set_debug_level(json_data["loglevel"])
-                try:
-                    if self.msg is None:
-                        self.msg = await self.channel.fetch_message(msg_ID)
-                except discord.NotFound:
-                    self.msg = None
-
-            serverInMaintenance = False
-            try:
-                main_address = ("46.4.12.78", 27015) 
-                info_server_event = a2s.info(main_address) #SPEED: Use this for all the other functions?
-                if "Maintenance" in info_server_event.server_name: serverInMaintenance = True
-            except (TimeoutError, socket.timeout): # Let TBN() handle the error
-                pass
-            
-            except ClientConnectorError:
-                logger.warning(f"ClientConnectorError: Retrying after {UPDATE_DELAY} seconds")
-                
-                await asyncio.sleep(UPDATE_DELAY)
-                self.background.restart()
-            
-            except Exception as e:
-                logger.warning(f"Unable to get server info to check if it is in maintenance mode")
-                logger.exception("  Unknown exception", e)
-                pass # Let TBN() handle the error
-            
-            if serverInMaintenance: # Is the server in Maintenance mode?
+            if "Maintenance" in self.main_server_info.server_name: # Is the server in Maintenance mode?
                 await self.edit_message(await self.maintenance_mode_message())
-                return
-            
-            message, total_player_count = await self.TBN() # Get the message with the server info
-            await self.edit_message(message)
-            await self.channel.edit(name=f"🎮┃Active crew: {total_player_count}")
+            else:
+                message, total_player_count = await self.TBN() # Get the message with the server info
+                await self.edit_message(message)
+                await self.channel.edit(name=f"🎮┃Active crew: {total_player_count}")
 
         except discord.HTTPException as e:
             await self.check_rate_limit(e)
 
+    async def prepare_background_task(self) -> None:
+        
+        # ------ Get server info ------
+        try:
+            main_address = ("46.4.12.78", 27015) 
+            self.main_server_info = a2s.info(main_address)
+        except (TimeoutError, socket.timeout):
+            return False
+        except Exception as e:
+            logger.error(f"Unable to get server info")
+            logger.exception("  Unknown exception", e)
+        
+        # Get the channel where the message is
+        if self.channel is None:
+            self.channel = self.get_channel(CHANNEL_ID_SERVER_INFO)
+
+        # Log when the bot was last online
+        await self.update_json_last_online()
+
+        # ----- Open json file and read it -----
+        with path_json.open() as file:
+            json_data = json.loads(file.read())
+            msg_ID = json_data["message_ID"]
+            await self.set_debug_level(json_data["loglevel"])
+            
+            # Update the message ID if it doesn't exist
+            try:
+                if self.msg is None:
+                    self.msg = await self.channel.fetch_message(msg_ID)
+            except discord.NotFound:
+                self.msg = None
+        
+        return True
+                
+    async def check_maintenance_mode(self) -> bool:
+        
+            if "Maintenance" in self.main_server_info.server_name:
+                return True
+            return False
+        
     
     @background.before_loop
     async def before_background(self) -> None:
@@ -327,7 +332,7 @@ class Elwood(commands.Bot):
     
     async def maintenance_mode_message(self) -> str:
         message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
-        message += "The server is currently in maintenance mode.\n\n"
+        message += "The servers are currently in maintenance mode.\n\n"
         message += "**Last update:** \n"
         message += f"<t:{int(time.time())}:R>"
         return message
