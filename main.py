@@ -12,6 +12,8 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from table2ascii import table2ascii
 from aiohttp import ClientConnectorError
+from a2s import SourceInfo
+from dataclasses import dataclass
 import pathlib
 
 
@@ -45,6 +47,10 @@ logger.setLevel(logging.INFO)
 # Discord.py logging
 discord_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='a')
 
+@dataclass
+class ServerInfo:
+    info: SourceInfo
+    players: list[str]
 
 class Elwood(commands.Bot):
 
@@ -55,12 +61,12 @@ class Elwood(commands.Bot):
             application_id = 979113489387884554)
         self.msg = None
         self.channel = None
-        self.main_server_info = None
+        self.main_server_info:  ServerInfo = None
+        self.event_server_info: ServerInfo = None
 
     async def setup_hook(self): 
         self.session = aiohttp.ClientSession()
         
-        # use apthlib
         cog_files = [file.stem for file in pathlib.Path("cogs").rglob("*.py")]
         
         for cog in cog_files:
@@ -93,7 +99,7 @@ class Elwood(commands.Bot):
         
 
         try:
-            if "Maintenance" in self.main_server_info.server_name: # Is the server in Maintenance mode?
+            if "Maintenance" in self.main_server_info.info.server_name: # Is the server in Maintenance mode?
                 await self.edit_message(await self.maintenance_mode_message())
             else:
                 message, total_player_count = await self.TBN() # Get the message with the server info
@@ -107,12 +113,15 @@ class Elwood(commands.Bot):
         
         # ------ Get server info ------
         try:
-            main_address = ("46.4.12.78", 27015) 
-            self.main_server_info = a2s.info(main_address)
+            main_address = ("46.4.12.78", 27015)
+            event_adress = ("46.4.12.78", 27016)
+            
+            self.main_server_info = await self.get_server_info(main_address)
+            self.event_server_info = await self.get_server_info(event_adress)
         except (TimeoutError, socket.timeout):
             return False
         except Exception as e:
-            logger.error(f"Unable to get server info")
+            logger.error("Unable to get server info")
             logger.exception("  Unknown exception", e)
         
         # Get the channel where the message is
@@ -136,18 +145,23 @@ class Elwood(commands.Bot):
                 self.msg = None
         
         return True
-                
-    async def check_maintenance_mode(self) -> bool:
-        
-            if "Maintenance" in self.main_server_info.server_name:
-                return True
-            return False
-        
+
+    async def get_server_info(self, address: tuple[str, int]) -> dict:
+        try:
+            return ServerInfo(a2s.info(address), a2s.players(address))
+        except TimeoutError:
+            logger.warning(f"Timed out while getting server info from {address}")
+            return None
+        except Exception as e:
+            logger.error(f"Unable to get server info from {address}")
+            logger.exception("  Unknown exception", e)
+            return None
+
     
     @background.before_loop
     async def before_background(self) -> None:
         await self.wait_until_ready()
-        logger.debug(f"Server info ready")
+        logger.debug("Server info ready")
 
     async def check_permission(self, user_perms, needed_perm_id) -> bool: # Check if the user has a specific role
         for i in range(len(user_perms)):
@@ -233,8 +247,8 @@ class Elwood(commands.Bot):
     async def TBN(self) -> tuple[str, int]: # Get server info
         try:
             # ------ Get tables and get server infos ------ 
-            main_info, player_count_main = await self.get_server_info(("46.4.12.78", 27015))
-            event_info, player_count_event = await self.get_server_info(("46.4.12.78", 27016))
+            main_info, player_count_main = await self.get_server_info_to_print(self.main_server_info)
+            event_info, player_count_event = await self.get_server_info_to_print(self.event_server_info)
                 
             message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
             message += "**Main server:**\n"
@@ -245,14 +259,14 @@ class Elwood(commands.Bot):
             message += f"<t:{int(time.time())}:R>"
             return message, player_count_main + player_count_event
         except Exception as e: # An error has occurred. Log it
-            logger.exception(f"Exception in TBN()", e)
+            logger.exception("Exception in TBN()", e)
             message = f"**An error occurred**\n\n{e}\nFIX THIS <@397046303378505729>"
             return message, 0
     
-    async def get_server_info(self, address: tuple[str, int]) -> tuple[str, int]:
+    async def get_server_info_to_print(self, server_info: ServerInfo) -> tuple[str, int]:
         try:
-            player_table = f"```{await self.get_table(address)}```\n"
-            info_server = a2s.info(address)
+            player_table = f"```{await self.get_table(server_info)}```\n"
+            info_server = server_info.info
             players_amount = f"Players online: {info_server.player_count}/{info_server.max_players}\n"
             return players_amount + player_table, info_server.player_count
         except TimeoutError:
@@ -264,9 +278,9 @@ class Elwood(commands.Bot):
             player_table = ""
             return players_amount + player_table, 0
     
-    async def get_table(self, address: tuple[str, int]) -> str:
-        # ------ Get players online from server ------ 
-        players_server = a2s.players(address)
+    async def get_table(self, server_info: ServerInfo) -> str:
+        
+        players_server = server_info.players
         
         # ------ Make a list so that table2ascii can read it ------ 
         players = []
@@ -279,10 +293,10 @@ class Elwood(commands.Bot):
             
             max_chars = 17
             if len(player_name) > max_chars:
-                player_name = player_name[0:max_chars-3]+"..."
+                player_name = player_name[0:max_chars - 3] + "..."
 
             if player_name == "": # If empty -> still connecting
-                if address[1] == 27016:
+                if server_info.info.port == 27016:
                     player_name = "Transporting..."
                 else:
                     player_name = "Connecting..."
@@ -318,7 +332,7 @@ class Elwood(commands.Bot):
         info_server_event = a2s.info(event_address)
         players_event = f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n"
         
-        ERROR_MESSAGE = f"\n**Players not shown**\nToo many players online, discord can't handle it\n\n"
+        ERROR_MESSAGE = "\n**Players not shown**\nToo many players online, discord can't handle it\n\n"
         
         message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
         message += "**Main server:**\n"
