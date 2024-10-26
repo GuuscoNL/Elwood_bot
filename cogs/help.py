@@ -3,8 +3,6 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 import os
-import time
-import logging
 import json
 import utils
 
@@ -20,18 +18,6 @@ with path_rank_json.open() as file:
     for role_id, _ in JSON_DATA["promotion_perms"].items():
         rank_permission_roles.append(int(role_id))
 
-#logging
-logger = logging.getLogger("help")
-
-formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
-                              "%d-%m-%Y %H:%M:%S")
-formatter.converter = time.gmtime
-
-file_handler = logging.FileHandler("main.log")
-file_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
-logger.setLevel(logging.INFO)
 
 load_dotenv() # load all the variables from the env file
 SERVER_ID =os.getenv('SERVER_ID')
@@ -41,6 +27,7 @@ class help(commands.Cog):
 
    def __init__(self, bot : commands.Bot) -> None:
       self.bot  = bot
+      self.logger = bot.cog_loggers[self.__class__.__name__]
    
    @app_commands.command(
       name = "help",
@@ -48,18 +35,18 @@ class help(commands.Cog):
     
    @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @help.error
    async def help(self, interaction : discord.Interaction) -> None:
-      utils.set_debug_level(logger)
+      utils.set_debug_level(self.logger)
       em = discord.Embed(title="Elwood commands:")
       em = await self.help_admin(em)
       em = await self.help_public(em)
       em = await self.help_special(em, interaction.user.roles)
       await interaction.response.send_message(embed=em, ephemeral=True)
-      logger.info(f"{interaction.user.name} used the `/help` command")
+      self.logger.info(f"{interaction.user.name} used the `/help` command")
       
    @help.error
    async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:  
       if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
-         utils.set_debug_level(logger)
+         utils.set_debug_level(self.logger)
          if interaction.user.id == 397046303378505729: # Check if the author is me (GuuscoNL)
             em = discord.Embed(title="Elwood commands:")
             em = await self.help_admin(em)
@@ -67,7 +54,7 @@ class help(commands.Cog):
          else:
             em = discord.Embed(title="Elwood commands:")
             await interaction.response.send_message(embed= await self.help_public(em), ephemeral=True)
-         logger.info(f"{interaction.user.name} used the `/help` command")
+         self.logger.info(f"{interaction.user.name} used the `/help` command")
    
    async def help_public(self, em : discord.Embed):
       public_help = '''`/help`

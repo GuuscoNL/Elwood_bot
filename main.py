@@ -46,7 +46,30 @@ class Elwood(commands.Bot):
 
 
         # logging
-        self.logger = logging.getLogger("main")
+        self.logger = self.create_logger("main")
+        self.cog_loggers = {}
+        
+        # path to the json file
+        path_dir = Path.Path(__file__).parent.resolve()
+        self.path_json = path_dir / "data.JSON"
+        
+
+    async def setup_hook(self): 
+        self.session = aiohttp.ClientSession()
+        
+        cog_files = [file.stem for file in Path.Path("cogs").rglob("*.py")]
+        
+        
+        for cog in cog_files:
+            self.cog_loggers[cog] = self.create_logger(cog)
+            
+            await self.load_extension(f"cogs.{cog}")
+
+        await bot.tree.sync(guild = discord.Object(id = SERVER_ID))
+        self.background.start()
+    
+    def create_logger(self, name: str) -> Logger:
+        logger = logging.getLogger(name)
 
         formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
                                     "%d-%m-%Y %H:%M:%S")
@@ -55,23 +78,11 @@ class Elwood(commands.Bot):
         file_handler = logging.FileHandler("main.log")
         file_handler.setFormatter(formatter)
 
-        self.logger.addHandler(file_handler)
-        self.logger.setLevel(logging.INFO)
+        logger.addHandler(file_handler)
+        logger.setLevel(logging.INFO)
         
-        # path to the json file
-        path_dir = Path.Path(__file__).parent.resolve()
-        self.path_json = path_dir / "data.JSON"
-
-    async def setup_hook(self): 
-        self.session = aiohttp.ClientSession()
+        return logger
         
-        cog_files = [file.stem for file in Path.Path("cogs").rglob("*.py")]
-        
-        for cog in cog_files:
-            await self.load_extension(f"cogs.{cog}")
-
-        await bot.tree.sync(guild = discord.Object(id = SERVER_ID))
-        self.background.start()
     
     async def on_ready(self):
         with self.path_json.open() as file:

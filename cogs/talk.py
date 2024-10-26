@@ -3,36 +3,17 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 import os
-import time
 import utils
-import logging
 
 load_dotenv() # load all the variables from the env file
 SERVER_ID = os.getenv('SERVER_ID')
 ADMIN_ROLE_ID = int(os.getenv('ADMIN_ROLE_ID'))
-
-from pathlib import Path
-path_dir = Path(__file__).parent.parent.resolve()
-path_json = path_dir / "data.JSON"
-
-#logging
-logger = logging.getLogger("talk")
-
-formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
-                              "%d-%m-%Y %H:%M:%S")
-formatter.converter = time.gmtime
-
-file_handler = logging.FileHandler("main.log")
-file_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
-logger.setLevel(logging.INFO)
-
 class talk(commands.Cog):
 
     def __init__(self, bot : commands.Bot) -> None:
         self.bot  = bot
-        self.text = ""
+        self.logger = bot.cog_loggers[self.__class__.__name__]
+        self.text = "" # TODO: IS THIS NEEDED?
     
     @app_commands.command(
         name = "talk",
@@ -43,15 +24,15 @@ class talk(commands.Cog):
     
     #@app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @talk.error
     async def talk(self, interaction : discord.Interaction, text : str) -> None:
-        utils.set_debug_level(logger)
+        utils.set_debug_level(self.logger)
         if interaction.user.id == 397046303378505729 or await self.check_permission(interaction.user.roles,ADMIN_ROLE_ID):
             text = text.replace("\\n", "\n")
             await interaction.response.send_message(content=f"**Saying:**\n{text}", ephemeral=True)
             await interaction.channel.send(content=text)
-            logger.info(f"{interaction.user.name} used the talk command and said: '{text}'")
+            self.logger.info(f"{interaction.user.name} used the talk command and said: '{text}'")
         else:
             await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
-            logger.warning(f"{interaction.user.name} tried to use `/talk`")
+            self.logger.warning(f"{interaction.user.name} tried to use `/talk`")
   
     async def check_permission(self, user_perms, needed_perm_id) -> bool: # Check if the user has a specific role
         for i in range(len(user_perms)):

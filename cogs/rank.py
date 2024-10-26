@@ -4,9 +4,7 @@ from discord.ext import commands
 from discord import ui
 from dotenv import load_dotenv
 import os
-import time
 import json
-import logging
 import utils
 
 load_dotenv() # load all the variables from the env file
@@ -24,25 +22,12 @@ with path_rank_json.open() as file:
     JSON_DATA = json.loads(file.read())
     for role_id, _ in JSON_DATA["promotion_perms"].items():
         permission_roles.append(int(role_id))
-        
-
-#logging
-logger = logging.getLogger("rank")
-
-formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
-                              "%d-%m-%Y %H:%M:%S")
-formatter.converter = time.gmtime
-
-file_handler = logging.FileHandler("main.log")
-file_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
-logger.setLevel(logging.INFO)
 
 class rank(commands.Cog):
 
     def __init__(self, bot : commands.Bot) -> None:
         self.bot  = bot
+        self.logger = bot.cog_loggers[self.__class__.__name__]
     
     @app_commands.command(
         name = "rank",
@@ -50,7 +35,7 @@ class rank(commands.Cog):
 
     @app_commands.checks.has_any_role(*permission_roles)
     async def rank(self, interaction : discord.Interaction) -> None:
-        utils.set_debug_level(logger)
+        utils.set_debug_level(self.logger)
 
         view = rankView(interaction=interaction)
         await view.update_selectRole()
@@ -61,9 +46,9 @@ class rank(commands.Cog):
     @rank.error
     async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:
         if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
-            utils.set_debug_level(logger)
+            utils.set_debug_level(self.logger)
             await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
-            logger.warning(f"{interaction.user.name} tried to use `/rank`")
+            self.logger.warning(f"{interaction.user.name} tried to use `/rank`")
 
 class rankView(ui.View):
     def __init__(self, interaction: discord.Interaction):
@@ -133,7 +118,7 @@ class rankView(ui.View):
                 self.selectRole.options.append(discord.SelectOption(label="No ranks that you can remove", value= 0))
                 
         else:
-            logger.error("Unknown mode in `/rank`")
+            self.logger.error("Unknown mode in `/rank`")
             await self.original_interaction.response.send_message(f"An error ocurred:\n`Unknown mode`", ephemeral=True)
             await self.disable_all_items()
             self.stop()
@@ -189,7 +174,7 @@ class rankView(ui.View):
             em.set_author(name=self.user.name, icon_url=self.user.display_avatar.url)
             
             await self.rank_channel.send(embed=em)
-            logger.info(f"{self.user.name} added the rank `{role.name}` to {self.user_selected.name}")
+            self.logger.info(f"{self.user.name} added the rank `{role.name}` to {self.user_selected.name}")
         
         elif self.mode == 1: # remove role
             await self.user_selected.remove_roles(role, reason=f"{self.user.name} removed the rank `{role.name}` from {self.user_selected.name} via `/rank`")
@@ -202,7 +187,7 @@ class rankView(ui.View):
             
             await self.rank_channel.send(embed=em)
             
-            logger.info(f"{self.user.name} removed the rank `{role.name}` from {self.user_selected.name}")
+            self.logger.info(f"{self.user.name} removed the rank `{role.name}` from {self.user_selected.name}")
         await self.disable_all_items()
         
     

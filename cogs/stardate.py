@@ -4,34 +4,16 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 import os
-import time
 import utils
-import logging
 
 load_dotenv() # load all the variables from the env file
 SERVER_ID = os.getenv('SERVER_ID')
-
-from pathlib import Path
-path_dir = Path(__file__).parent.parent.resolve()
-path_json = path_dir / "data.JSON"
-
-#logging
-logger = logging.getLogger("stardate")
-
-formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
-                              "%d-%m-%Y %H:%M:%S")
-formatter.converter = time.gmtime
-
-file_handler = logging.FileHandler("main.log")
-file_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
-logger.setLevel(logging.INFO)
 
 class stardate(commands.Cog):
 
    def __init__(self, bot : commands.Bot) -> None:
       self.bot  = bot
+      self.logger = bot.cog_loggers[self.__class__.__name__]
    
    @app_commands.command(
       name = "stardate",
@@ -77,9 +59,9 @@ class stardate(commands.Cog):
          + (dateTable.second / (24 * 3600)))
       ))
       stardate = format(stardate, ".3f")
-      utils.set_debug_level(logger)
+      utils.set_debug_level(self.logger)
       await interaction.response.send_message(f"Current stardate is {stardate}\nTo calculate a custom stardate use this website: https://guusconl.github.io/TBN.github.io/", ephemeral=True, suppress_embeds=True)
-      logger.info(f"{interaction.user.name} used the `/stardate` command")
+      self.logger.info(f"{interaction.user.name} used the `/stardate` command")
 
 
 async def setup(bot : commands.Bot) -> None:
