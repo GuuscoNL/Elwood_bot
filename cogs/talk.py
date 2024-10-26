@@ -13,7 +13,6 @@ class talk(commands.Cog):
     def __init__(self, bot : commands.Bot) -> None:
         self.bot  = bot
         self.logger = bot.cog_loggers[self.__class__.__name__]
-        self.text = "" # TODO: IS THIS NEEDED?
     
     @app_commands.command(
         name = "talk",

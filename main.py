@@ -16,6 +16,7 @@ from a2s import SourceInfo
 from dataclasses import dataclass
 import pathlib as Path
 from logging import Logger
+from typing import Any
 
 import utils
 
@@ -58,7 +59,6 @@ class Elwood(commands.Bot):
         self.session = aiohttp.ClientSession()
         
         cog_files = [file.stem for file in Path.Path("cogs").rglob("*.py")]
-        
         
         for cog in cog_files:
             self.cog_loggers[cog] = self.create_logger(cog)
@@ -137,7 +137,7 @@ class Elwood(commands.Bot):
             self.channel = self.get_channel(CHANNEL_ID_SERVER_INFO)
 
         # Log when the bot was last online
-        await self.update_json_last_online()
+        await self.update_json("last_online", time.time())
 
         # ----- Open json file and read it -----
         with self.path_json.open() as file:
@@ -173,19 +173,10 @@ class Elwood(commands.Bot):
         await self.wait_until_ready()
         self.logger.debug("Server info ready")
 
-    async def update_json_message_ID(self) -> None:
+    async def update_json(self, key: str, value: Any) -> None:
         with self.path_json.open(mode="r+") as file:
             json_data = json.loads(file.read())
-            json_data["message_ID"] = self.msg.id
-            file.seek(0)
-            temp = json.dumps(json_data, indent=3)
-            file.truncate(0)
-            file.write(temp)
-
-    async def update_json_last_online(self) -> None:
-        with self.path_json.open(mode="r+") as file:
-            json_data = json.loads(file.read())
-            json_data["last_online"] = time.time()
+            json_data[key] = value
             file.seek(0)
             temp = json.dumps(json_data, indent=3)
             file.truncate(0)
@@ -208,7 +199,7 @@ class Elwood(commands.Bot):
                 
             except Exception as e:
                 self.logger.exception("Unknown exception when creating new server info message", e)
-            await self.update_json_message_ID()
+            await self.update_json("message_ID", self.msg.id)
 
         else: # message exists
             self.logger.debug("Reusing server info message")
