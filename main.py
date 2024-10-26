@@ -102,9 +102,7 @@ class Elwood(commands.Bot):
     @tasks.loop(seconds=UPDATE_DELAY)
     async def background(self) -> None:
         
-        if not await self.prepare_background_task():
-            # Unable to get server info
-            return
+        self.prepare_background_task()
         
         try:
             if "Maintenance" in self.main_server_info.info.server_name: # Is the server in Maintenance mode?
@@ -122,16 +120,26 @@ class Elwood(commands.Bot):
         # ------ Get server info ------
         try:
             main_address = ("46.4.12.78", 27015)
-            event_adress = ("46.4.12.78", 27016)
-            
             self.main_server_info = await self.get_server_info(main_address)
-            self.event_server_info = await self.get_server_info(event_adress)
         except (TimeoutError, socket.timeout):
+            self.main_server_info = None
             return False
         except Exception as e:
+            self.main_server_info = None
             self.logger.error("Unable to get server info")
             self.logger.exception("  Unknown exception", e)
         
+        try:
+            event_address = ("46.4.12.78", 27016)
+            self.event_server_info = await self.get_server_info(event_address)
+        except (TimeoutError, socket.timeout):
+                self.event_server_info = None
+                return False
+        except Exception as e:
+            self.event_server_info = None
+            self.logger.error("Unable to get server info")
+            self.logger.exception("  Unknown exception", e)
+
         # Get the channel where the message is
         if self.channel is None:
             self.channel = self.get_channel(CHANNEL_ID_SERVER_INFO)
@@ -239,9 +247,16 @@ class Elwood(commands.Bot):
 
     async def get_servers_message(self) -> tuple[str, int]:
         # ------ Get tables and get server infos ------ 
-        main_info, player_count_main = await self.get_online_players(self.main_server_info)
-        event_info, player_count_event = await self.get_online_players(self.event_server_info)
+        if self.main_server_info is not None:
+            main_info, player_count_main = await self.get_online_players(self.main_server_info)
+        else:
+            main_info, player_count_main = "`Timed out`\nProbably a map restart or the server is offline\n", 0
             
+        if self.event_server_info is not None:
+            event_info, player_count_event = await self.get_online_players(self.event_server_info)
+        else:
+            event_info, player_count_event = "`Timed out`\nProbably a map restart or the server is offline\n", 0
+        
         message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
         message += "**Main server:**\n"
         message += main_info
@@ -252,19 +267,10 @@ class Elwood(commands.Bot):
         return message, player_count_main + player_count_event
     
     async def get_online_players(self, server_info: ServerInfo) -> tuple[str, int]:
-        try:
-            player_table = f"```{await self.get_table(server_info)}```\n"
-            info_server = server_info.info
-            players_amount = f"Players online: {info_server.player_count}/{info_server.max_players}\n"
-            return players_amount + player_table, info_server.player_count
-        except TimeoutError:
-            players_amount = ""
-            player_table = "`Timed out`\nProbably a map restart or the server is offline\n"
-            return players_amount + player_table, 0
-        except Exception as e:
-            players_amount = f"{e}\n"
-            player_table = ""
-            return players_amount + player_table, 0
+        player_table = f"```{await self.get_table(server_info)}```\n"
+        players_amount = f"Players online: {server_info.info.player_count}/{server_info.info.max_players}\n"
+        return players_amount + player_table, server_info.info.player_count
+
     
     async def get_table(self, server_info: ServerInfo) -> str:
         
