@@ -102,7 +102,7 @@ class Elwood(commands.Bot):
             if "Maintenance" in self.main_server_info.info.server_name: # Is the server in Maintenance mode?
                 await self.edit_message(await self.maintenance_mode_message())
             else:
-                message, total_player_count = await self.TBN() # Get the message with the server info
+                message, total_player_count = await self.get_servers_message() # Get the message with the server info
                 await self.edit_message(message)
                 await self.channel.edit(name=f"🎮┃Active crew: {total_player_count}")
 
@@ -162,12 +162,6 @@ class Elwood(commands.Bot):
     async def before_background(self) -> None:
         await self.wait_until_ready()
         logger.debug("Server info ready")
-
-    async def check_permission(self, user_perms, needed_perm_id) -> bool: # Check if the user has a specific role
-        for i in range(len(user_perms)):
-            if user_perms[i].id == needed_perm_id:
-                return True
-        return False
 
     async def update_json_message_ID(self) -> None:
         with path_json.open(mode="r+") as file:
@@ -244,26 +238,21 @@ class Elwood(commands.Bot):
             self.msg = await self.msg.edit(content=await self.too_many_players())
             logger.warning("Too many characters in the message")
 
-    async def TBN(self) -> tuple[str, int]: # Get server info
-        try:
-            # ------ Get tables and get server infos ------ 
-            main_info, player_count_main = await self.get_server_info_to_print(self.main_server_info)
-            event_info, player_count_event = await self.get_server_info_to_print(self.event_server_info)
-                
-            message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
-            message += "**Main server:**\n"
-            message += main_info
-            message += "**Event server:**\n"
-            message += event_info
-            message += "**Last update:** \n"
-            message += f"<t:{int(time.time())}:R>"
-            return message, player_count_main + player_count_event
-        except Exception as e: # An error has occurred. Log it
-            logger.exception("Exception in TBN()", e)
-            message = f"**An error occurred**\n\n{e}\nFIX THIS <@397046303378505729>"
-            return message, 0
+    async def get_servers_message(self) -> tuple[str, int]:
+        # ------ Get tables and get server infos ------ 
+        main_info, player_count_main = await self.get_online_players(self.main_server_info)
+        event_info, player_count_event = await self.get_online_players(self.event_server_info)
+            
+        message = "**Connect to server:** steam://connect/46.4.12.78:27015\n\n"
+        message += "**Main server:**\n"
+        message += main_info
+        message += "**Event server:**\n"
+        message += event_info
+        message += "**Last update:** \n"
+        message += f"<t:{int(time.time())}:R>"
+        return message, player_count_main + player_count_event
     
-    async def get_server_info_to_print(self, server_info: ServerInfo) -> tuple[str, int]:
+    async def get_online_players(self, server_info: ServerInfo) -> tuple[str, int]:
         try:
             player_table = f"```{await self.get_table(server_info)}```\n"
             info_server = server_info.info
@@ -325,12 +314,8 @@ class Elwood(commands.Bot):
             logger.setLevel(logging.NOTSET)
 
     async def too_many_players(self) -> str:
-        main_address = ("46.4.12.78", 27015)
-        info_server_main = a2s.info(main_address)
-        players_main = f"Players online: {info_server_main.player_count}/{info_server_main.max_players}\n"
-        event_address = ("46.4.12.78", 27016) 
-        info_server_event = a2s.info(event_address)
-        players_event = f"Players online: {info_server_event.player_count}/{info_server_event.max_players}\n"
+        players_main = f"Players online: {self.main_server_info.info.player_count}/{self.main_server_info.info.max_players}\n"
+        players_event = f"Players online: {self.event_server_info.info.player_count}/{self.event_server_info.info.max_players}\n"
         
         ERROR_MESSAGE = "\n**Players not shown**\nToo many players online, discord can't handle it\n\n"
         
