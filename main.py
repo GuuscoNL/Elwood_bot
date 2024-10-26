@@ -17,6 +17,7 @@ from dataclasses import dataclass
 import pathlib as Path
 from logging import Logger
 
+import utils
 
 # ------ Constants that must be changed in .env for every server the bot is in ------ 
 load_dotenv(override=True) # load all the variables from the env file
@@ -33,16 +34,33 @@ class ServerInfo:
 
 class Elwood(commands.Bot):
 
-    def __init__(self, logger: Logger):
+    def __init__(self):
         super().__init__(
             command_prefix="!",
             intents = discord.Intents.all(),
             application_id = 979113489387884554)
-        self.logger = logger
         self.msg = None
         self.channel = None
         self.main_server_info:  ServerInfo = None
         self.event_server_info: ServerInfo = None
+
+
+        # logging
+        self.logger = logging.getLogger("main")
+
+        formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
+                                    "%d-%m-%Y %H:%M:%S")
+        formatter.converter = time.gmtime
+
+        file_handler = logging.FileHandler("main.log")
+        file_handler.setFormatter(formatter)
+
+        self.logger.addHandler(file_handler)
+        self.logger.setLevel(logging.INFO)
+        
+        # path to the json file
+        path_dir = Path.Path(__file__).parent.resolve()
+        self.path_json = path_dir / "data.JSON"
 
     async def setup_hook(self): 
         self.session = aiohttp.ClientSession()
@@ -56,7 +74,7 @@ class Elwood(commands.Bot):
         self.background.start()
     
     async def on_ready(self):
-        with path_json.open() as file:
+        with self.path_json.open() as file:
             data = json.loads(file.read())
             last_online_time = datetime.datetime.fromtimestamp(data["last_online"])
 
@@ -77,7 +95,6 @@ class Elwood(commands.Bot):
             # Unable to get server info
             return
         
-
         try:
             if "Maintenance" in self.main_server_info.info.server_name: # Is the server in Maintenance mode?
                 await self.edit_message(await self.maintenance_mode_message())
@@ -112,10 +129,9 @@ class Elwood(commands.Bot):
         await self.update_json_last_online()
 
         # ----- Open json file and read it -----
-        with path_json.open() as file:
+        with self.path_json.open() as file:
             json_data = json.loads(file.read())
             msg_ID = json_data["message_ID"]
-            await self.set_debug_level(json_data["loglevel"])
             
             # Update the message ID if it doesn't exist
             try:
@@ -123,6 +139,9 @@ class Elwood(commands.Bot):
                     self.msg = await self.channel.fetch_message(msg_ID)
             except discord.NotFound:
                 self.msg = None
+        
+        # Set the debug level
+        utils.set_debug_level(self.logger)
         
         return True
 
@@ -144,7 +163,7 @@ class Elwood(commands.Bot):
         self.logger.debug("Server info ready")
 
     async def update_json_message_ID(self) -> None:
-        with path_json.open(mode="r+") as file:
+        with self.path_json.open(mode="r+") as file:
             json_data = json.loads(file.read())
             json_data["message_ID"] = self.msg.id
             file.seek(0)
@@ -153,7 +172,7 @@ class Elwood(commands.Bot):
             file.write(temp)
 
     async def update_json_last_online(self) -> None:
-        with path_json.open(mode="r+") as file:
+        with self.path_json.open(mode="r+") as file:
             json_data = json.loads(file.read())
             json_data["last_online"] = time.time()
             file.seek(0)
@@ -275,21 +294,6 @@ class Elwood(commands.Bot):
                             body=players
                                 )
         return output
-    
-    async def set_debug_level(self, debuglevel):
-        if debuglevel == "DEBUG":
-            self.logger.setLevel(logging.DEBUG)
-        elif debuglevel == "INFO":
-            self.logger.setLevel(logging.INFO)
-        elif debuglevel == "WARNING":
-            self.logger.setLevel(logging.WARNING)
-        elif debuglevel == "ERROR":
-            self.logger.setLevel(logging.ERROR)
-        elif debuglevel == "CRITICAL":
-            self.logger.setLevel(logging.CRITICAL)
-        else:
-            print("no debug level set")
-            self.logger.setLevel(logging.NOTSET)
 
     async def too_many_players(self) -> str:
         players_main = f"Players online: {self.main_server_info.info.player_count}/{self.main_server_info.info.max_players}\n"
@@ -315,24 +319,6 @@ class Elwood(commands.Bot):
         return message
 
 if __name__ == "__main__":
-    # ------ Logging ------ 
-    path_dir = Path.Path(__file__).parent.resolve()
-    path_json = path_dir / "data.JSON"
-
-    # logging
-    logger = logging.getLogger("main")
-
-    formatter = logging.Formatter("[%(asctime)s] %(levelname)-8s:%(name)-12s: %(message)s",
-                                "%d-%m-%Y %H:%M:%S")
-    formatter.converter = time.gmtime
-
-    file_handler = logging.FileHandler("main.log")
-    file_handler.setFormatter(formatter)
-
-    logger.addHandler(file_handler)
-    logger.setLevel(logging.INFO)
-    
-
     # ------ Run the bot ------
-    bot = Elwood(logger)
+    bot = Elwood()
     bot.run(TOKEN, log_handler=logging.FileHandler(filename='discord.log', encoding='utf-8', mode='a'), log_level=logging.INFO) # run the bot with the token

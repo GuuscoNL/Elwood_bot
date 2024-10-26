@@ -6,6 +6,7 @@ import os
 import time
 import logging
 import json
+import utils
 
 from pathlib import Path
 path_dir = Path(__file__).parent.parent.resolve()
@@ -47,7 +48,7 @@ class help(commands.Cog):
     
    @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @help.error
    async def help(self, interaction : discord.Interaction) -> None:
-      await set_debug_level()
+      utils.set_debug_level(logger)
       em = discord.Embed(title="Elwood commands:")
       em = await self.help_admin(em)
       em = await self.help_public(em)
@@ -58,7 +59,7 @@ class help(commands.Cog):
    @help.error
    async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:  
       if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
-         await set_debug_level()
+         utils.set_debug_level(logger)
          if interaction.user.id == 397046303378505729: # Check if the author is me (GuuscoNL)
             em = discord.Embed(title="Elwood commands:")
             em = await self.help_admin(em)
@@ -137,22 +138,3 @@ async def setup(bot : commands.Bot) -> None:
       help(bot),
       guilds = [discord.Object(id = SERVER_ID)]
    )
-   
-async def set_debug_level():
-    with path_json.open() as file:
-        json_data = json.loads(file.read())
-        debuglevel = json_data["loglevel"]
-    
-    if debuglevel == "DEBUG":
-        logger.setLevel(logging.DEBUG)
-    elif debuglevel == "INFO":
-        logger.setLevel(logging.INFO)
-    elif debuglevel == "WARNING":
-        logger.setLevel(logging.WARNING)
-    elif debuglevel == "ERROR":
-        logger.setLevel(logging.ERROR)
-    elif debuglevel == "CRITICAL":
-        logger.setLevel(logging.CRITICAL)
-    else:
-        print("no debug level set")
-        logger.setLevel(logging.NOTSET)

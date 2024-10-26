@@ -6,6 +6,7 @@ import os
 import time
 import json
 import logging
+import utils
 
 load_dotenv() # load all the variables from the env file
 SERVER_ID =os.getenv('SERVER_ID')
@@ -37,7 +38,7 @@ class guus(commands.Cog):
          description = "Gives an explanation and a video on how to pronounce Guus correctly")
    
    async def guus(self, interaction : discord.Interaction) -> None:
-      await set_debug_level()
+      utils.set_debug_level(logger)
       explanation = "In Dutch, a G is pronounced quite like the German [ch], as in Bach. Or, while it doesn't exist in Standard English, you might also be familiar with this sound in Scottish words like “loch” and “ach.”"
       await interaction.response.send_message(content=f"{explanation}\n\nVideo: https://www.youtube.com/watch?v=JsUJV2zvQtY", ephemeral=True)
       logger.info(f"{interaction.user.name} used the `/guus` command")
@@ -47,22 +48,3 @@ async def setup(bot : commands.Bot) -> None:
       guus(bot),
       guilds = [discord.Object(id = SERVER_ID)]
    )
-   
-async def set_debug_level():
-    with path_json.open() as file:
-        json_data = json.loads(file.read())
-        debuglevel = json_data["loglevel"]
-    
-    if debuglevel == "DEBUG":
-        logger.setLevel(logging.DEBUG)
-    elif debuglevel == "INFO":
-        logger.setLevel(logging.INFO)
-    elif debuglevel == "WARNING":
-        logger.setLevel(logging.WARNING)
-    elif debuglevel == "ERROR":
-        logger.setLevel(logging.ERROR)
-    elif debuglevel == "CRITICAL":
-        logger.setLevel(logging.CRITICAL)
-    else:
-        print("no debug level set")
-        logger.setLevel(logging.NOTSET)

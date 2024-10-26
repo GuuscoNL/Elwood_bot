@@ -6,6 +6,7 @@ import os
 import time
 import json
 import logging
+import utils
 
 load_dotenv() # load the variables needed from the .env file
 SERVER_ID = os.getenv('SERVER_ID')
@@ -39,7 +40,7 @@ class command_json(commands.Cog):
 
    @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @json.error
    async def command_json(self, interaction : discord.Interaction) -> None:
-      await set_debug_level()
+      utils.set_debug_level(logger)
       with path_json.open(mode="r") as file:
          json_data = json.loads(file.read())   
       await interaction.response.send_message(f"```{json_data}```", ephemeral=True)
@@ -48,7 +49,7 @@ class command_json(commands.Cog):
    @command_json.error
    async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:
       if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
-         await set_debug_level()
+         utils.set_debug_level(logger)
          if interaction.user.id == 397046303378505729:# Check if the author is me (GuuscoNL)
                with path_json.open(mode="r") as file:
                   json_data = json.loads(file.read())
@@ -63,22 +64,3 @@ async def setup(bot : commands.Bot) -> None:
       command_json(bot),
       guilds = [discord.Object(id = SERVER_ID)]
    )
-   
-async def set_debug_level():
-    with path_json.open() as file:
-        json_data = json.loads(file.read())
-        debuglevel = json_data["loglevel"]
-    
-    if debuglevel == "DEBUG":
-        logger.setLevel(logging.DEBUG)
-    elif debuglevel == "INFO":
-        logger.setLevel(logging.INFO)
-    elif debuglevel == "WARNING":
-        logger.setLevel(logging.WARNING)
-    elif debuglevel == "ERROR":
-        logger.setLevel(logging.ERROR)
-    elif debuglevel == "CRITICAL":
-        logger.setLevel(logging.CRITICAL)
-    else:
-        print("no debug level set")
-        logger.setLevel(logging.NOTSET)

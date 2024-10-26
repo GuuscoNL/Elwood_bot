@@ -5,7 +5,7 @@ import random as rnd
 from dotenv import load_dotenv
 import os
 import time
-import json
+import utils
 import logging
 
 load_dotenv() # load all the variables from the env file
@@ -37,7 +37,7 @@ class roll(commands.Cog):
       name = "roll",
       description = "Rolls between 0 and 100")
    async def roll(self, interaction : discord.Interaction) -> None:
-      await set_debug_level()
+      utils.set_debug_level(logger)
       roll = rnd.randint(0,100)
       if roll == 0:
          await interaction.response.send_message(f"You rolled a {roll}, have you thought of joining medical?")
@@ -54,22 +54,3 @@ async def setup(bot : commands.Bot) -> None:
       roll(bot),
       guilds = [discord.Object(id = SERVER_ID)]
    )
-
-async def set_debug_level():
-    with path_json.open() as file:
-        json_data = json.loads(file.read())
-        debuglevel = json_data["loglevel"]
-    
-    if debuglevel == "DEBUG":
-        logger.setLevel(logging.DEBUG)
-    elif debuglevel == "INFO":
-        logger.setLevel(logging.INFO)
-    elif debuglevel == "WARNING":
-        logger.setLevel(logging.WARNING)
-    elif debuglevel == "ERROR":
-        logger.setLevel(logging.ERROR)
-    elif debuglevel == "CRITICAL":
-        logger.setLevel(logging.CRITICAL)
-    else:
-        print("no debug level set")
-        logger.setLevel(logging.NOTSET)

@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import os
 import json
 import logging
+import utils
 
 load_dotenv() # load all the variables from the env file
 SERVER_ID = os.getenv('SERVER_ID')
@@ -41,7 +42,7 @@ class earthdate(commands.Cog):
         stardate = "earthdate"
     )
    async def stardate(self, interaction : discord.Interaction, stardate : str) -> None:
-      await set_debug_level()
+      utils.set_debug_level(logger)
       try:
          stardate = float(stardate)
          date = await stardate_to_date(stardate)
@@ -81,22 +82,3 @@ async def setup(bot : commands.Bot) -> None:
       earthdate(bot),
       guilds = [discord.Object(id = SERVER_ID)]
    )
-   
-async def set_debug_level():
-    with path_json.open() as file:
-        json_data = json.loads(file.read())
-        debuglevel = json_data["loglevel"]
-    
-    if debuglevel == "DEBUG":
-        logger.setLevel(logging.DEBUG)
-    elif debuglevel == "INFO":
-        logger.setLevel(logging.INFO)
-    elif debuglevel == "WARNING":
-        logger.setLevel(logging.WARNING)
-    elif debuglevel == "ERROR":
-        logger.setLevel(logging.ERROR)
-    elif debuglevel == "CRITICAL":
-        logger.setLevel(logging.CRITICAL)
-    else:
-        print("no debug level set")
-        logger.setLevel(logging.NOTSET)

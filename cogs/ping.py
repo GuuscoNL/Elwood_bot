@@ -6,6 +6,7 @@ import os
 import time
 import json
 import logging
+import utils
 
 load_dotenv() # load all the variables from the env file
 SERVER_ID = os.getenv('SERVER_ID')
@@ -39,14 +40,14 @@ class ping(commands.Cog):
 
     @app_commands.checks.has_any_role(ADMIN_ROLE_ID) # Check if the author has the admin role. If not go to @ping.error
     async def ping(self, interaction : discord.Interaction) -> None:
-        await set_debug_level()
+        utils.set_debug_level(logger)
         await interaction.response.send_message(f"pong ({str(self.bot.latency*1000)[0:6]} ms)", ephemeral=True)
         logger.info(f"{interaction.user.name} pinged the bot")
         
     @ping.error
     async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:
         if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
-            await set_debug_level()
+            utils.set_debug_level(logger)
             if interaction.user.id == 397046303378505729:# Check if the author is me (GuuscoNL)
                 await interaction.response.send_message(f"pong ({str(self.bot.latency*1000)[0:6]} ms)", ephemeral=True)
                 logger.info(f"{interaction.user.name} pinged the bot")
@@ -59,22 +60,3 @@ async def setup(bot : commands.Bot) -> None:
         ping(bot),
         guilds = [discord.Object(id = SERVER_ID)]
     )
-    
-async def set_debug_level():
-    with path_json.open() as file:
-        json_data = json.loads(file.read())
-        debuglevel = json_data["loglevel"]
-    
-    if debuglevel == "DEBUG":
-        logger.setLevel(logging.DEBUG)
-    elif debuglevel == "INFO":
-        logger.setLevel(logging.INFO)
-    elif debuglevel == "WARNING":
-        logger.setLevel(logging.WARNING)
-    elif debuglevel == "ERROR":
-        logger.setLevel(logging.ERROR)
-    elif debuglevel == "CRITICAL":
-        logger.setLevel(logging.CRITICAL)
-    else:
-        print("no debug level set")
-        logger.setLevel(logging.NOTSET)

@@ -7,6 +7,7 @@ import os
 import time
 import json
 import logging
+import utils
 
 load_dotenv() # load all the variables from the env file
 SERVER_ID = os.getenv('SERVER_ID')
@@ -49,7 +50,7 @@ class rank(commands.Cog):
 
     @app_commands.checks.has_any_role(*permission_roles)
     async def rank(self, interaction : discord.Interaction) -> None:
-        await set_debug_level()
+        utils.set_debug_level(logger)
 
         view = rankView(interaction=interaction)
         await view.update_selectRole()
@@ -60,7 +61,7 @@ class rank(commands.Cog):
     @rank.error
     async def permission(self, interaction : discord.Interaction, error : app_commands.AppCommandError) -> None:
         if isinstance(error, app_commands.MissingAnyRole): # Check if the error is because of an missing role
-            await set_debug_level()
+            utils.set_debug_level(logger)
             await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
             logger.warning(f"{interaction.user.name} tried to use `/rank`")
 
@@ -262,26 +263,6 @@ async def setup(bot : commands.Bot) -> None:
         rank(bot),
         guilds = [discord.Object(id = SERVER_ID)]
     )
-    
-async def set_debug_level():
-    with path_json.open() as file:
-        json_data = json.loads(file.read())
-        debuglevel = json_data["loglevel"]
-    
-    if debuglevel == "DEBUG":
-        logger.setLevel(logging.DEBUG)
-    elif debuglevel == "INFO":
-        logger.setLevel(logging.INFO)
-    elif debuglevel == "WARNING":
-        logger.setLevel(logging.WARNING)
-    elif debuglevel == "ERROR":
-        logger.setLevel(logging.ERROR)
-    elif debuglevel == "CRITICAL":
-        logger.setLevel(logging.CRITICAL)
-    else:
-        print("no debug level set")
-        logger.setLevel(logging.NOTSET)
-        
         
 """ Main server
 Officers can promote this ranks - 1053531693404913757 ([Officer])

@@ -5,7 +5,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import os
 import time
-import json
+import utils
 import logging
 
 load_dotenv() # load all the variables from the env file
@@ -77,7 +77,7 @@ class stardate(commands.Cog):
          + (dateTable.second / (24 * 3600)))
       ))
       stardate = format(stardate, ".3f")
-      await set_debug_level()
+      utils.set_debug_level(logger)
       await interaction.response.send_message(f"Current stardate is {stardate}\nTo calculate a custom stardate use this website: https://guusconl.github.io/TBN.github.io/", ephemeral=True, suppress_embeds=True)
       logger.info(f"{interaction.user.name} used the `/stardate` command")
 
@@ -87,22 +87,3 @@ async def setup(bot : commands.Bot) -> None:
       stardate(bot),
       guilds = [discord.Object(id = SERVER_ID)]
    )
-   
-async def set_debug_level():
-    with path_json.open() as file:
-        json_data = json.loads(file.read())
-        debuglevel = json_data["loglevel"]
-    
-    if debuglevel == "DEBUG":
-        logger.setLevel(logging.DEBUG)
-    elif debuglevel == "INFO":
-        logger.setLevel(logging.INFO)
-    elif debuglevel == "WARNING":
-        logger.setLevel(logging.WARNING)
-    elif debuglevel == "ERROR":
-        logger.setLevel(logging.ERROR)
-    elif debuglevel == "CRITICAL":
-        logger.setLevel(logging.CRITICAL)
-    else:
-        print("no debug level set")
-        logger.setLevel(logging.NOTSET)

@@ -7,6 +7,7 @@ import os
 import time
 import json
 import logging
+import utils
 
 load_dotenv() # load the variables needed from the .env file
 SERVER_ID =os.getenv('SERVER_ID')
@@ -51,7 +52,7 @@ class loglevel(commands.Cog):
    
 
    async def loglevel(self, interaction : discord.Interaction, loglevel : str) -> None:
-      await set_log_level()
+      utils.set_debug_level(logger)
       loglevel = loglevel.upper()
       if interaction.user.id == 397046303378505729 or await self.check_permission(interaction.user.roles,ADMIN_ROLE_ID):
          if await self.update_json(loglevel):
@@ -91,23 +92,3 @@ async def setup(bot : commands.Bot) -> None:
       loglevel(bot),
       guilds = [discord.Object(id = SERVER_ID)]
    )
-   
-   
-async def set_log_level():
-    with path_json.open() as file:
-        json_data = json.loads(file.read())
-        loglevel = json_data["loglevel"]
-    
-    if loglevel == "DEBUG":
-        logger.setLevel(logging.DEBUG)
-    elif loglevel == "INFO":
-        logger.setLevel(logging.INFO)
-    elif loglevel == "WARNING":
-        logger.setLevel(logging.WARNING)
-    elif loglevel == "ERROR":
-        logger.setLevel(logging.ERROR)
-    elif loglevel == "CRITICAL":
-        logger.setLevel(logging.CRITICAL)
-    else:
-        print("no log level set")
-        logger.setLevel(logging.NOTSET)
