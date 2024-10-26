@@ -14,7 +14,7 @@ from table2ascii import table2ascii
 from aiohttp import ClientConnectorError
 from a2s import SourceInfo
 from dataclasses import dataclass
-import pathlib
+from pathlib import Path
 
 
 # ------ Constants that must be changed in .env for every server the bot is in ------ 
@@ -27,7 +27,6 @@ UPDATE_DELAY = 60*5 # seconds
 
 
 # ------ Initialise some stuff ------ 
-from pathlib import Path
 path_dir = Path(__file__).parent.resolve()
 path_json = path_dir / "data.JSON"
 
@@ -67,7 +66,7 @@ class Elwood(commands.Bot):
     async def setup_hook(self): 
         self.session = aiohttp.ClientSession()
         
-        cog_files = [file.stem for file in pathlib.Path("cogs").rglob("*.py")]
+        cog_files = [file.stem for file in Path.Path("cogs").rglob("*.py")]
         
         for cog in cog_files:
             await self.load_extension(f"cogs.{cog}")
