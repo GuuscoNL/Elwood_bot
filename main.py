@@ -182,8 +182,8 @@ class Elwood(commands.Bot):
             file.write(temp)
 
     async def edit_message(self, message: str) -> None:
-        if self.msg == None: # if message doesn't exist create a new one
-            logger.debug(f"Starting server info")
+        if self.msg is None: # if message doesn't exist create a new one
+            logger.debug("Creating new server info message")
             try:
                 self.msg = await self.channel.send(content=message)
             except discord.errors.HTTPException as e: # too many characters in the message or rate limit
@@ -197,12 +197,11 @@ class Elwood(commands.Bot):
                 self.background.restart()
                 
             except Exception as e:
-                self.msg = await self.channel.send(content=f"ERROR: {e}")
-                logger.exception("Unknown exception", e)
+                logger.exception("Unknown exception when creating new server info message", e)
             await self.update_json_message_ID()
 
         else: # message exists
-            logger.debug(f"Starting server info")
+            logger.debug("Reusing server info message")
             try:
                 await self.msg.edit(content=message)
             except discord.errors.HTTPException as e: # too many characters in the message or rate limit
@@ -216,8 +215,7 @@ class Elwood(commands.Bot):
                 self.background.restart()
 
             except Exception as e:
-                self.msg = await self.msg.edit(content=f"ERROR: {e}")
-                logger.exception("Unknown exception", e)
+                logger.exception("Unknown exception when trying to reuse server info message", e)
 
     async def check_rate_limit(self, e: discord.errors.HTTPException) -> None:
         if e.status == 429:
