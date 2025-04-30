@@ -102,7 +102,7 @@ class Elwood(commands.Bot):
     @tasks.loop(seconds=UPDATE_DELAY)
     async def background(self) -> None:
         
-        self.prepare_background_task()
+        await self.prepare_background_task()
         
         try:
             if "Maintenance" in self.main_server_info.info.server_name: # Is the server in Maintenance mode?
@@ -133,8 +133,8 @@ class Elwood(commands.Bot):
             event_address = ("46.4.12.78", 27016)
             self.event_server_info = await self.get_server_info(event_address)
         except (TimeoutError, socket.timeout):
-                self.event_server_info = None
-                return False
+            self.event_server_info = None
+            return False
         except Exception as e:
             self.event_server_info = None
             self.logger.error("Unable to get server info")
