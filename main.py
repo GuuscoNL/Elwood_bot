@@ -105,7 +105,7 @@ class Elwood(commands.Bot):
         await self.prepare_background_task()
         
         try:
-            if "Maintenance" in self.main_server_info.info.server_name: # Is the server in Maintenance mode?
+            if self.main_server_info is not None and "Maintenance" in self.main_server_info.info.server_name: # Is the server in Maintenance mode?
                 await self.edit_message(await self.maintenance_mode_message())
             else:
                 message, total_player_count = await self.get_servers_message() # Get the message with the server info
