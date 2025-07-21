@@ -24,7 +24,7 @@ class content(commands.Cog):
         mesg = """The Content for the server is NOT REQUIRED.
 It is FASTER, to join the server without it.
 Only Subscribe to the server if your problems persist after a restart of the game and joining the server again.
-\n||https://steamcommunity.com/workshop/filedetails/?id=2566173658||"""
+\n||https://steamcommunity.com/workshop/filedetails/?id=3370773063||"""
         self.logger.info(f"{interaction.user.name} used the `/content` command")
         await interaction.response.send_message(mesg, ephemeral=True)
 
